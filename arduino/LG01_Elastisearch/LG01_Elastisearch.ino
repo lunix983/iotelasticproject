@@ -124,7 +124,7 @@ void loop()
                     data[2] = buf[2];
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
-                    int newData[5] = {0, 0, 0, 0, 0}; //Store Sensor Data here
+                   /* int newData[5] = {0, 0, 0, 0, 0}; //Store Sensor Data here
                     for (int i = 0; i < 5; i++)
                     {
                         newData[i] = buf[i + 3];
@@ -134,6 +134,24 @@ void loop()
                     int th = newData[2];
                     int tl = newData[3];
                     int rssi = newData[4];
+                    rssi = rssi * -1;*/
+                    
+                    int hh = buf[3];
+                    int hl = buf[4];
+                    int th = buf[5];
+                    int tl = buf[6];
+                    int rssi = buf[7];
+                    Console.print("++++++ buf 8: ");
+                    Console.println(buf[8]);
+                    if (buf[8] == 1){
+                      rssi = rssi * -1;  
+                    }
+                    
+                    
+                    
+                    
+                    
+                    
                     Console.print("Get Temperature:");
                     Console.print(th);
                     Console.print(".");
@@ -142,8 +160,12 @@ void loop()
                     Console.print(hh);
                     Console.print(".");
                     Console.println(hl);
-                    Console.print("RSSI: ");
+                    Console.print("++++++ RSSI received: ");
                     Console.println(rssi);
+
+
+
+                    
                     dataString = "idnode=666";                   
                     dataString +="&temp=";
                     dataString += th;
