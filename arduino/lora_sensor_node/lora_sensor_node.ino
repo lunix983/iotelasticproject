@@ -23,7 +23,7 @@
 #include <RH_TCP.h>
 #include <RH_NRF51.h>
 #include <RHNRFSPIDriver.h>
-#include <RH_RF95.h>
+//#include <RH_RF95.h>
 
 
 
@@ -35,7 +35,7 @@
 #include <SysCall.h>
 #include <MinimumSerial.h>
 #include <SPI.h>
-//#include <RH_RF95.h>
+#include <RH_RF95.h>
 
 
 /*
@@ -221,9 +221,9 @@ void loop()
     // Read temperature as Celsius (the default)
     float t = dht.readTemperature();
     int rssi = rf95.lastRssi();
-   /* int snr = rf95.lastSNR();
+    int snr = rf95.lastSNR();
     Serial.print("SNR: ");
-    Serial.println(snr);*/
+    Serial.println(snr);
     if (rssi < 0) {
       Serial.print("RSSI negativo: ");  // print RSSI
       rssi = rssi * -1;
