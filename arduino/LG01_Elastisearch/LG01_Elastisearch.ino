@@ -94,12 +94,12 @@ uint16_t recdata( unsigned char* recbuf, int Length)
 }
 void loop()
 {
-    Console.print("Spreading Factor: ");
+    /*Console.print("Spreading Factor: ");
     Console.println(sf);
     Console.print("Bandwidth: ");
     Console.println(bw);
     Console.print("Coding Rate: ");
-    Console.println(cr);
+    Console.println(cr);*/
     if (rf95.waitAvailableTimeout(2000))// Listen Data from LoRa Node
     {
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
@@ -116,42 +116,26 @@ void loop()
             Console.println();
             if(crcdata == recCRCData) //Check if CRC is correct
             { 
-                if(buf[0] == 1||buf[1] == 1||buf[2] ==1) //Check if the ID match the LoRa Node ID
-                {
+                //if(buf[0] == 1||buf[1] == 1||buf[2] ==1) //Check if the ID match the LoRa Node ID
+                //{
                     uint8_t data[] = "   Server ACK";//Reply 
                     data[0] = buf[0];
-                    data[1] = buf[1];
-                    data[2] = buf[2];
+                    //data[1] = buf[1];
+                    //data[2] = buf[2];
+                    
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
-                   /* int newData[5] = {0, 0, 0, 0, 0}; //Store Sensor Data here
-                    for (int i = 0; i < 5; i++)
-                    {
-                        newData[i] = buf[i + 3];
-                    }
-                    int hh = newData[0];
-                    int hl = newData[1];
-                    int th = newData[2];
-                    int tl = newData[3];
-                    int rssi = newData[4];
-                    rssi = rssi * -1;*/
-                    
+                    int nodeID = buf[0];
                     int hh = buf[3];
                     int hl = buf[4];
                     int th = buf[5];
                     int tl = buf[6];
                     int rssi = buf[7];
-                    Console.print("++++++ buf 8: ");
-                    Console.println(buf[8]);
                     if (buf[8] == 1){
                       rssi = rssi * -1;  
                     }
-                    
-                    
-                    
-                    
-                    
-                    
+                    Console.print("Received message from nodeID: ");
+                    Console.println(nodeID);
                     Console.print("Get Temperature:");
                     Console.print(th);
                     Console.print(".");
@@ -162,11 +146,8 @@ void loop()
                     Console.println(hl);
                     Console.print("++++++ RSSI received: ");
                     Console.println(rssi);
-
-
-
-                    
-                    dataString = "idnode=666";                   
+                    dataString = "idnode=";
+                    dataString +=nodeID;                   
                     dataString +="&temp=";
                     dataString += th;
                     dataString +=".";
@@ -178,7 +159,7 @@ void loop()
                     //Console.println(dataString);
                     uploadData(); // 
                     dataString="";
-                }
+                //}
             } 
             else 
               Console.println(" CRC Fail");     
