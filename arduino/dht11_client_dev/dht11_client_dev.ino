@@ -189,7 +189,7 @@ void loop()
     if (rssi < 0) {
       Serial.print("RSSI negativo: ");  // print RSSI
       rssi = rssi * -1;
-      data[8] = 1;
+      data[7] = 1;
     }
     
     Serial.print("RSSI: ");  // print RSSI
@@ -199,11 +199,13 @@ void loop()
     int umIntPart = h;
     int unDecPart = (h - umIntPart) * 100;
     data[0] = nodeID;
+    data[1] = snr;
+    data[2] = rssi;
     data[3] = umIntPart;
     data[4] = unDecPart;
     data[5] = tempIntPart;
     data[6] = tempDecPart;
-    data[7] = rssi;
+    
    
     switch (bGlobalErr)
     {

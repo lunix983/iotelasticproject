@@ -126,12 +126,14 @@ void loop()
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
                     int nodeID = buf[0];
+                    int snr = buf[1];
+                    int rssi = buf[2];
                     int hh = buf[3];
                     int hl = buf[4];
                     int th = buf[5];
                     int tl = buf[6];
-                    int rssi = buf[7];
-                    if (buf[8] == 1){
+                    
+                    if (buf[7] == 1){
                       rssi = rssi * -1;  
                     }
                     Console.print("Received message from nodeID: ");
@@ -146,6 +148,8 @@ void loop()
                     Console.println(hl);
                     Console.print("++++++ RSSI received: ");
                     Console.println(rssi);
+                     Console.print("++++++ SNR received: ");
+                    Console.println(snr);
                     dataString = "idnode=";
                     dataString +=nodeID;                   
                     dataString +="&temp=";
