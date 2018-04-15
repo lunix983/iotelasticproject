@@ -1,42 +1,6 @@
-#include <RHTcpProtocol.h>
-#include <RH_ASK.h>
-#include <RH_NRF905.h>
-#include <RHGenericDriver.h>
-#include <RHHardwareSPI.h>
-#include <RH_NRF24.h>
-#include <RH_Serial.h>
-#include <RHRouter.h>
-#include <RH_RF69.h>
-#include <RadioHead.h>
-#include <RH_MRF89.h>
-#include <RH_RF22.h>
-#include <RH_RF24.h>
-#include <RHSoftwareSPI.h>
-#include <RHCRC.h>
-#include <RHSPIDriver.h>
-#include <RH_CC110.h>
-#include <radio_config_Si4460.h>
-#include <RHDatagram.h>
-#include <RHReliableDatagram.h>
-#include <RHMesh.h>
-#include <RHGenericSPI.h>
-#include <RH_TCP.h>
-#include <RH_NRF51.h>
-#include <RHNRFSPIDriver.h>
-#include <RH_RF95.h>
-
-
-
-#include <DHT.h>
-#include <SdFat.h>
-#include <FreeStack.h>
-#include <SdFatConfig.h>
-#include <BlockDriver.h>
-#include <SysCall.h>
-#include <MinimumSerial.h>
 #include <SPI.h>
-//#include <RH_RF95.h>
-
+#include <RH_RF95.h>
+#include <DHT.h>
 
 /*
   Upload Data to IoT Server ThingSpeak (https://thingspeak.com/):
@@ -57,7 +21,6 @@
 /*#include <String.h>*/
 
 RH_RF95 rf95;
-
 #define DHTPIN 7
 #define DHTTYPE DHT11
 //#define dht_dpin A0 // Use A0 pin as Data pin for DHT11. 
@@ -84,8 +47,7 @@ void setup()
     // Setup Power,dBm
     rf95.setTxPower(13);
    // Setup Spreading Factor (6 ~ 12)
-   rf95.setSpreadingFactor(sf);
-  
+   rf95.setSpreadingFactor(sf); 
     // Setup BandWidth, option: 7800,10400,15600,20800,31250,41700,62500,125000,250000,500000
     //Lower BandWidth for longer distance.
     rf95.setSignalBandwidth(bw);
@@ -94,7 +56,7 @@ void setup()
     rf95.setCodingRate4(cr);
   
     
-    dht.begin();
+    //dht.begin();
     Serial.println("LoRa End Node Example --"); 
     Serial.println("    DHT11 Temperature and Humidity Sensor by LUIX\n");
     Serial.print("LoRa End Node ID: ");
@@ -221,9 +183,9 @@ void loop()
     // Read temperature as Celsius (the default)
     float t = dht.readTemperature();
     int rssi = rf95.lastRssi();
-   /* int snr = rf95.lastSNR();
+    int snr = rf95.lastSNR();
     Serial.print("SNR: ");
-    Serial.println(snr);*/
+    Serial.println(snr);
     if (rssi < 0) {
       Serial.print("RSSI negativo: ");  // print RSSI
       rssi = rssi * -1;
