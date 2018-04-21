@@ -151,7 +151,11 @@ void loop()
                      Console.print("++++++ SNR received: ");
                     Console.println(snr);
                     dataString = "idnode=";
-                    dataString +=nodeID;                   
+                    dataString +=nodeID;
+                    dataString +="&snr=";
+                    dataString +=snr;
+                    dataString +="&rssi=";
+                    dataString +=rssi;                   
                     dataString +="&temp=";
                     dataString += th;
                     dataString +=".";
