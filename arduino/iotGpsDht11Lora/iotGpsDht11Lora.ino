@@ -22,7 +22,7 @@
 /*#include <String.h>*/
 
 RH_RF95 rf95;
-TinyGPS gps;
+
 #define DHTPIN 7
 #define DHTTYPE DHT11
 //#define dht_dpin A0 // Use A0 pin as Data pin for DHT11. 
@@ -37,7 +37,7 @@ DHT dht(DHTPIN, DHTTYPE);
 int sf = 12;
 long bw = 250000;
 int cr = 8;
-
+TinyGPS gps;
 
 SoftwareSerial ss(3, 4); // Arduino RX, TX , 
 
@@ -53,6 +53,7 @@ static void print_str(const char *str, int len);
 void setup()
 {
    // InitDHT();
+   
     Serial.begin(9600);
     if (!rf95.init())
         Serial.println("init failed");
@@ -68,6 +69,7 @@ void setup()
   
     // Setup Coding Rate:5(4/5),6(4/6),7(4/7),8(4/8) 
     rf95.setCodingRate4(cr);
+     Serial.print("Testing TinyGPS library Luix. "); Serial.println(TinyGPS::library_version());
   
     
     //dht.begin();
@@ -81,11 +83,7 @@ void setup()
     Serial.println(bw);
      Serial.print("Code Rate:" );
     Serial.println(cr);
-/*
-    for(int i = 0;i < 3; i++)
-    {
-        Serial.print(node_id[i],HEX);
-    }*/
+
     Serial.println();
 }
 
@@ -193,6 +191,12 @@ static void smartdelay(unsigned long ms)
 
 static void print_float(float val, float invalid, int len, int prec)
 {
+  Serial.println();
+  Serial.print("val: ");
+  Serial.println(val);
+  Serial.print("invalid: ");
+  Serial.print(invalid);
+  Serial.println();
   if (val == invalid)
   {
     while (len-- > 1)
@@ -256,39 +260,17 @@ static void print_str(const char *str, int len)
 
 void getGpsdata(){
   float flat, flon;
-  unsigned long age, date, time, chars = 0;
-  unsigned short sentences = 0, failed = 0;
-  static const double LONDON_LAT = 51.508131, LONDON_LON = -0.128002;
-
-  print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
-  print_int(gps.hdop(), TinyGPS::GPS_INVALID_HDOP, 5);
+  unsigned long age;
   gps.f_get_position(&flat, &flon, &age);
   print_float(flat, TinyGPS::GPS_INVALID_F_ANGLE, 10, 6);
   print_float(flon, TinyGPS::GPS_INVALID_F_ANGLE, 11, 6);
   Serial.println();
-  Serial.print("+++++++ FLAT: ");
-  Serial.println(flat);
-  Serial.print("+++++++ FLON: ");
-  Serial.println(flon);
-  print_int(age, TinyGPS::GPS_INVALID_AGE, 5);
-  print_date(gps);
-  print_float(gps.f_altitude(), TinyGPS::GPS_INVALID_F_ALTITUDE, 7, 2);
-  print_float(gps.f_course(), TinyGPS::GPS_INVALID_F_ANGLE, 7, 2);
-  print_float(gps.f_speed_kmph(), TinyGPS::GPS_INVALID_F_SPEED, 6, 2);
-  print_str(gps.f_course() == TinyGPS::GPS_INVALID_F_ANGLE ? "*** " : TinyGPS::cardinal(gps.f_course()), 6);
-  print_int(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0xFFFFFFFF : (unsigned long)TinyGPS::distance_between(flat, flon, LONDON_LAT, LONDON_LON) / 1000, 0xFFFFFFFF, 9);
-  print_float(flat == TinyGPS::GPS_INVALID_F_ANGLE ? TinyGPS::GPS_INVALID_F_ANGLE : TinyGPS::course_to(flat, flon, LONDON_LAT, LONDON_LON), TinyGPS::GPS_INVALID_F_ANGLE, 7, 2);
-  print_str(flat == TinyGPS::GPS_INVALID_F_ANGLE ? "*** " : TinyGPS::cardinal(TinyGPS::course_to(flat, flon, LONDON_LAT, LONDON_LON)), 6);
-
-  gps.stats(&chars, &sentences, &failed);
-  print_int(chars, 0xFFFFFFFF, 6);
-  print_int(sentences, 0xFFFFFFFF, 10);
-  print_int(failed, 0xFFFFFFFF, 9);
+  Serial.print("FLAT: ");
+  Serial.println(flat, 6);
+  Serial.print("FLON: ");
+  Serial.println(flon, 6);
   Serial.println();
-  
-  smartdelay(1000);
-
-  
+  smartdelay(2000);
 }
 
 
@@ -297,9 +279,8 @@ void loop()
     Serial.print("###########    ");
     Serial.print("COUNT=");
     Serial.println(count);
-   
+    getGpsdata();
     count++;
-    
    // ReadDHT();
     char data[50] = {0} ;
    // int dataLength = 7; // Payload Length
@@ -311,7 +292,7 @@ void loop()
     int rssi = rf95.lastRssi();
     int snr = rf95.lastSNR();
    
-    getGpsdata();
+    
 
     
     Serial.print("SNR: ");
@@ -432,7 +413,8 @@ void loop()
         Serial.println("No reply, is LoRa gateway running?");//No signal reply
         rf95.send(sendBuf, strlen((char*)sendBuf));//resend data
     }
-    delay(30000); // Send sensor data every 30 seconds
+    delay(3000); // Send sensor data every 30 seconds
+   // delay(30000);
     Serial.println("");
 }
 

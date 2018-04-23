@@ -136,6 +136,8 @@ void loop()
                     if (buf[7] == 1){
                       rssi = rssi * -1;  
                     }
+                    float flat = buf[8];
+                    float flon = buf[9];
                     Console.print("Received message from nodeID: ");
                     Console.println(nodeID);
                     Console.print("Get Temperature:");
@@ -150,6 +152,10 @@ void loop()
                     Console.println(rssi);
                      Console.print("++++++ SNR received: ");
                     Console.println(snr);
+                    Console.print("flat:");
+                    Console.println(flat, 6 );
+                    Console.print("flon: ");
+                    Console.println(flon, 6);
                     dataString = "idnode=";
                     dataString +=nodeID;
                     dataString +="&snr=";
@@ -210,7 +216,7 @@ void uploadData() {//Upload Data to ThingSpeak
     Console.write(c);
   }
   Console.println("");
-  Console.println("Call ThinkSpeak Finished");
+  Console.println("Call Luix NetworkServer Finished");
   Console.println(dataString);
   Console.println("####################################");
   Console.println("");
