@@ -303,7 +303,10 @@ void loop()
 {
   getGpsData();
   InitDHT();
-  
+  char gps_lon[20]={"\0"};  
+  char gps_lat[20]={"\0"}; 
+  String datastring="";
+  String datastring1="";
   if (hand)
   {
     handshake();
@@ -342,7 +345,8 @@ void loop()
   Serial.print("** flatDecPart: ");  Serial.println(flatDecPart);
   Serial.print("** flonIntPart: ");  Serial.println(flon);
   Serial.print("** flonDecPart: ");  Serial.println(flonDecPart);*/
-
+  datastring +=dtostrf(flat, 0, 6, gps_lat); 
+  datastring1 +=dtostrf(flon, 0, 6, gps_lon);
   
   data[0] = nodeID;
   data[1] = snr;
@@ -351,8 +355,8 @@ void loop()
   data[4] = unDecPart;
   data[5] = tempIntPart;
   data[6] = tempDecPart;
-  data[8] = flat; 
-  data[9] = flon;
+  data[8] = gps_lat; 
+  data[9] = gps_lon;
     
   uint16_t crcData = CRC16((unsigned char*)data,dataLength);//get CRC DATA
 
