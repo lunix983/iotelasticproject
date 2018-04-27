@@ -313,7 +313,7 @@ void loop()
   Serial.print("****** "); Serial.print("COUNT="); Serial.println(count); Serial.println("****** ");
   count++;
   char data[50] = {0} ;
-  int dataLength = 10; // Payload Length
+  int dataLength = 20; // Payload Length
   float h = dht.readHumidity(); // Read temperature Humidity
   float t = dht.readTemperature(); // Read temperature as Celsius (the default)
 
@@ -333,16 +333,30 @@ void loop()
   int tempDecPart = (t - tempIntPart) * 100;
   int umIntPart = h;
   int unDecPart = (h - umIntPart) * 100;
-  /*int flatIntPart = flat;
-  int flatDecPart = (flat - flatIntPart) * 100;
+  
+  int flatIntPart = flat;
+  long flatDecPart = (flat - flatIntPart) * 1000000;
   int flonIntPart = flon;
-  int flonDecPart = (flon - flonDecPart) * 100;
-
-  Serial.print("** flatIntPart: ");  Serial.println(flat);
+  long flonDecPart = (flon - flonIntPart) * 1000000;
+  Serial.print("** flatIntPart: ");  Serial.println(flatIntPart);
   Serial.print("** flatDecPart: ");  Serial.println(flatDecPart);
-  Serial.print("** flonIntPart: ");  Serial.println(flon);
-  Serial.print("** flonDecPart: ");  Serial.println(flonDecPart);*/
+  Serial.print("** flonIntPart: ");  Serial.println(flonIntPart);
+  Serial.print("** flonDecPart: ");  Serial.println(flonDecPart);
 
+  unsigned long int longInt = flatDecPart;
+  Serial.print("** longInt: ");
+   Serial.println(longInt);
+  unsigned char byteArray[4];
+              
+    // convert from an unsigned long int to a 4-byte array
+    byteArray[0] = (int)((longInt >> 24) & 0xFF) ;
+    byteArray[1] = (int)((longInt >> 16) & 0xFF) ;
+    byteArray[2] = (int)((longInt >> 8) & 0XFF);
+    byteArray[3] = (int)((longInt & 0XFF));
+    Serial.print("** byteArray[0]: ");  Serial.println(byteArray[0]);
+    Serial.print("** byteArray[1]: ");  Serial.println(byteArray[1]);
+    Serial.print("** byteArray[2]: ");  Serial.println(byteArray[2]);
+    Serial.print("** byteArray[3]: ");  Serial.println(byteArray[3]);
   
   data[0] = nodeID;
   data[1] = snr;
@@ -351,9 +365,14 @@ void loop()
   data[4] = unDecPart;
   data[5] = tempIntPart;
   data[6] = tempDecPart;
-  data[8] = flat; 
-  data[9] = flon;
-    
+  data[8] = flatIntPart; 
+  data[9] = flatDecPart;
+  data[10] = flonIntPart; 
+  data[11] = flonDecPart;
+  data[12] = count;
+  Serial.print("data[9] flatDecPart: ");  Serial.println(data[9]);
+  Serial.print("data[11] flonDecPart: ");  Serial.println(data[11]);
+        
   uint16_t crcData = CRC16((unsigned char*)data,dataLength);//get CRC DATA
 
   Serial.print("Data to be sent(without CRC): ");
