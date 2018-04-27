@@ -136,8 +136,11 @@ void loop()
                     if (buf[7] == 1){
                       rssi = rssi * -1;  
                     }
-                    float flat = buf[8];
-                    float flon = buf[9];
+                    int flatIntPart = buf[8];
+                    long flatDecpart = buf[9];
+                    int flonIntPart = buf[10];
+                    long flonDecPart = buf[11]; 
+                    int sequenceNumber = buf[12];
                     Console.print("Received message from nodeID: ");
                     Console.println(nodeID);
                     Console.print("Get Temperature:");
@@ -152,10 +155,18 @@ void loop()
                     Console.println(rssi);
                      Console.print("++++++ SNR received: ");
                     Console.println(snr);
-                    Console.print("flat:");
-                    Console.println(flat, 6 );
-                    Console.print("flon: ");
-                    Console.println(flon, 6);
+                    Console.print("--- flat: "); 
+                    Console.print(flatIntPart); 
+                    Console.print("."); 
+                    Console.println(flatDecpart);
+                    
+                    Console.print("--- flon: "); 
+                    Console.print(flonIntPart); 
+                    Console.print("."); 
+                    Console.println(flonDecPart);
+                    Console.print("Sequence Number: ");
+                    Console.println(sequenceNumber);
+                    
                     dataString = "idnode=";
                     dataString +=nodeID;
                     dataString +="&snr=";
