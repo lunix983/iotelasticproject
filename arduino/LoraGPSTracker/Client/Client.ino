@@ -37,19 +37,24 @@ char gps_lat[20]={"\0"};
 
 void setup()
 {
-  Serial.begin(9600);
-  ss.begin(9600);
-    if (!rf95.init())
-    Serial.println("init failed");
-    // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
-    ss.print("Simple TinyGPS library v. "); ss.println(TinyGPS::library_version());
-    Serial.println();
+  // initialize both serial ports:
+  Serial.begin(9600);  // Serial to print out GPS info in Arduino IDE
+  ss.begin(9600); // SoftSerial port to get GPS data. 
+  while (!Serial) {
+     ;
+  };
+  Serial.println("Monitor Dragino LoRa GPS Shield Status");
+  Serial.print("Testing TinyGPS library. "); Serial.println(TinyGPS::library_version());
+  if (!rf95.init())
+        Serial.println("init failed");
+  
+  Serial.println();
 }
 
 void loop()
 { 
   // Print Sending to rf95_server
-  ss.println("Sending to rf95_server");
+  Serial.println("Sending to rf95_server");
   bool newData = false;
   unsigned long chars;
   unsigned short sentences, failed;
@@ -66,27 +71,27 @@ void loop()
     }
   }
   //Get the GPS data
-  if (newData)
-  {
+ // if (newData)
+ // {
     float flat, flon;
     unsigned long age;
     gps.f_get_position(&flat, &flon, &age);
-    ss.print("LAT=");
-    ss.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
-    ss.print(" LON=");
-    ss.print(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
-    ss.print(" SAT=");
-    ss.print(gps.satellites() == TinyGPS::GPS_INVALID_SATELLITES ? 0 : gps.satellites());
-    ss.print(" PREC=");
-    ss.print(gps.hdop() == TinyGPS::GPS_INVALID_HDOP ? 0 : gps.hdop());
+    Serial.print("LAT=");
+    Serial.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
+    Serial.print(" LON=");
+    Serial.print(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
+    Serial.print(" SAT=");
+    Serial.print(gps.satellites() == TinyGPS::GPS_INVALID_SATELLITES ? 0 : gps.satellites());
+    Serial.print(" PREC=");
+    Serial.print(gps.hdop() == TinyGPS::GPS_INVALID_HDOP ? 0 : gps.hdop());
     flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6;          
     flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6; 
     // Once the GPS fixed,send the data to the server.
     datastring +=dtostrf(flat, 0, 6, gps_lat); 
     datastring1 +=dtostrf(flon, 0, 6, gps_lon);
-    ss.println(strcat(strcat(gps_lon,","),gps_lat));
+    Serial.println(strcat(strcat(gps_lon,","),gps_lat));
     strcpy(gps_lat,gps_lon);
-    ss.println(gps_lat); //Print gps_lon and gps_lat
+    Serial.println(gps_lat); //Print gps_lon and gps_lat
     strcpy((char *)dataoutgoing,gps_lat); 
     // Send the data to server
     rf95.send(dataoutgoing, sizeof(dataoutgoing));
@@ -101,8 +106,8 @@ void loop()
        if (rf95.recv(indatabuf, &len))
       {
          // Serial print "got reply:" and the reply message from the server
-         ss.print("got reply: ");
-         ss.println((char*)indatabuf);
+         Serial.print("got reply: ");
+         Serial.println((char*)indatabuf);
       }
       else
       {
@@ -116,7 +121,7 @@ void loop()
     }
   delay(400);
     
- }
+ //}
   
   gps.stats(&chars, &sentences, &failed);                                                                                                                                                                                                                                                                                                                                                                          
   ss.print(" CHARS=");

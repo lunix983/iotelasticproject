@@ -229,6 +229,7 @@ void loop()
 {
   getGpsData();
   InitDHT();
+<<<<<<< HEAD
   
   
   Serial.print("****** "); Serial.print("COUNT="); Serial.println(count); Serial.println("****** ");
@@ -236,6 +237,23 @@ void loop()
   char data[50] = {0} ;
   //uint8_t data[50];
   int dataLength = 50; // Payload Length
+=======
+  char gps_lon[20]={"\0"};  
+  char gps_lat[20]={"\0"}; 
+  String datastring="";
+  String datastring1="";
+  /*if (hand)
+  {
+    handshake();
+    hand = false;  
+  }*/
+  
+  Serial.print("****** "); Serial.print("COUNT="); Serial.println(count); Serial.println("****** ");
+  count++;
+  //char data[50] = {0} ;
+  uint32_t data[100];
+  int dataLength = 100; // Payload Length
+>>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
   float h = dht.readHumidity(); // Read temperature Humidity
   float t = dht.readTemperature(); // Read temperature as Celsius (the default)
  /* Serial.print("temperature: "); 
@@ -268,6 +286,7 @@ void loop()
   int flatIntPart = flat;
   long flatDecPart = (flat - flatIntPart) * 1000000;
   int flonIntPart = flon;
+<<<<<<< HEAD
   long flonDecPart = ((flon - flonIntPart) * 1000000) +1 ;
 /*
   Serial.print("** flatIntPart: ");  Serial.println(flatIntPart);
@@ -305,6 +324,40 @@ void loop()
  
 
       
+=======
+  long flonDecPart = (flon - flonIntPart) * 1000000;
+
+  Serial.print("** flatIntPart: ");  Serial.println(flat);
+  Serial.print("** flatDecPart: ");  Serial.println(flatDecPart);
+  Serial.print("** flonIntPart: ");  Serial.println(flon);
+  Serial.print("** flonDecPart: ");  Serial.println(flonDecPart);
+  //datastring +=dtostrf(flat, 0, 6, gps_lat); 
+  //datastring1 +=dtostrf(flon, 0, 6, gps_lon);
+/*  char cp[10];
+  datastring.toCharArray(cp, 10);*/
+  data[0] = nodeID;
+  data[1] = snr;
+  data[2] = rssi;
+  data[3] = umIntPart;
+  data[4] = unDecPart;
+  data[5] = tempIntPart;
+  data[6] = tempDecPart;
+  data[8] = flatIntPart; 
+  data[9] = flatDecPart;
+  data[10] = flonIntPart; 
+  data[11] = flonDecPart;
+
+  Serial.print("data[8] gps_lat int part: ");
+  Serial.println(data[8]);
+  Serial.print("data[9] gps_lat dec part: ");
+  Serial.println(data[9]);
+
+   Serial.print("data[10] gps_lon int part: ");
+  Serial.println(data[10]);
+  Serial.print("data[11] gps_lon dec part: ");
+  Serial.println(data[11]);
+    
+>>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
   uint16_t crcData = CRC16((unsigned char*)data,dataLength);//get CRC DATA
 
   Serial.print("Data to be sent(without CRC): ");
@@ -316,6 +369,7 @@ void loop()
       Serial.print(" ");
   }
   Serial.println();      
+<<<<<<< HEAD
   unsigned char sendBuf[50]={0};
   //uint8_t sendBuf[100]={0};
   for(i = 0;i < dataLength;i++)
@@ -328,13 +382,25 @@ void loop()
   }  
   sendBuf[dataLength] = (unsigned char)crcData; // Add CRC to LoRa Data
   sendBuf[dataLength+1] = (unsigned char)(crcData>>8); // Add CRC to LoRa Data
+=======
+ // unsigned char sendBuf[50]={0};
+  uint32_t sendBuf;
+ /* for(i = 0;i < dataLength;i++)
+  {
+        sendBuf[i] = data[i] ;
+  }  */
+ // sendBuf[dataLength] = (unsigned char)crcData; // Add CRC to LoRa Data
+ // sendBuf[dataLength+1] = (unsigned char)(crcData>>8); // Add CRC to LoRa Data
+  //sendBuf[dataLength] = crcData;
+>>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
   Serial.print("Data to be sent(with CRC):    ");
-  for(i = 0;i < (dataLength +2); i++)
+ /* for(i = 0;i < (dataLength +2); i++)
   {
       Serial.print(sendBuf[i],HEX);
       Serial.print(" ");
-  }
+  }*/
   Serial.println();
+<<<<<<< HEAD
   rf95.send(sendBuf, dataLength+2);//Send LoRa Data
 
   ///// Replay from gateway
@@ -370,6 +436,9 @@ void loop()
   }
     //delay(3000); // Send sensor data every 30 seconds
   Serial.println("");
+=======
+  rf95.send(data, dataLength+2);//Send LoRa Data
+>>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
   
   
 }
