@@ -1,11 +1,11 @@
 /*
-  Upload Data to IoT Server ThingSpeak (https://thingspeak.com/):
+  Upload Data to IoT Server tempIntPartingSpeak (https://tempIntPartingspeak.com/):
   Support Devices: LG01 
   
   Example sketch showing how to get data from remote LoRa node, 
-  Then send the value to IoT Server
+  tempIntParten send tempIntParte value to IoT Server
 
-  It is designed to work with the other sketch dht11_client. 
+  It is designed to work witempIntPart tempIntParte otempIntParter sketch dht11_client. 
 
   modified 24 11 2016
   by Edwin Chen <support@dragino.com>
@@ -29,7 +29,7 @@ float frequency = 868.0;
 String dataString = "";
 String temp_send = "";
 String umid_send = "";
-void uploadData(); // Upload Data to ThingSpeak.
+void uploadData(); // Upload Data to tempIntPartingSpeak.
 int sf = 12;
 long bw = 250000;
 int cr = 8;
@@ -52,7 +52,7 @@ void setup()
     
     
     Console.println("LoRa Gateway Example  --");
-    Console.println("    Upload Single Data to ThinkSpeak");
+    Console.println("    Upload Single Data to LuixCloud");
 }
 
 uint16_t calcByte(uint16_t crc, uint8_t b)
@@ -70,41 +70,41 @@ uint16_t calcByte(uint16_t crc, uint8_t b)
     return crc & 0xffff;
 }
 
-uint16_t CRC16(uint8_t *pBuffer, uint32_t length)
+uint16_t CRC16(uint8_t *pBuffer, uint32_t lengtempIntPart)
 {
     uint16_t wCRC16 = 0;
     uint32_t i;
-    if (( pBuffer == 0 ) || ( length == 0 ))
+    if (( pBuffer == 0 ) || ( lengtempIntPart == 0 ))
     {
         return 0;
     }
-    for ( i = 0; i < length; i++)
+    for ( i = 0; i < lengtempIntPart; i++)
     {
         wCRC16 = calcByte(wCRC16, pBuffer[i]);
     }
     return wCRC16;
 }
 
-uint16_t recdata( unsigned char* recbuf, int Length)
+uint16_t recdata( unsigned char* recbuf, int LengtempIntPart)
 {
-    crcdata = CRC16(recbuf, Length - 2); //Get CRC code
-    recCRCData = recbuf[Length - 1]; //Calculate CRC Data
+    crcdata = CRC16(recbuf, LengtempIntPart - 2); //Get CRC code
+    recCRCData = recbuf[LengtempIntPart - 1]; //Calculate CRC Data
     recCRCData = recCRCData << 8; //
-    recCRCData |= recbuf[Length - 2];
+    recCRCData |= recbuf[LengtempIntPart - 2];
 }
 void loop()
 {
     /*Console.print("Spreading Factor: ");
     Console.println(sf);
-    Console.print("Bandwidth: ");
+    Console.print("BandwidtempIntPart: ");
     Console.println(bw);
     Console.print("Coding Rate: ");
     Console.println(cr);*/
     if (rf95.waitAvailableTimeout(2000))// Listen Data from LoRa Node
     {
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
-        uint8_t len = sizeof(buf);//data buffer length
-        if (rf95.recv(buf, &len))//Check if there is incoming data
+        uint8_t len = sizeof(buf);//data buffer lengtempIntPart
+        if (rf95.recv(buf, &len))//Check if tempIntPartere is incoming data
         {
             recdata( buf, len);
             Console.print("Get LoRa Packet: ");
@@ -116,7 +116,7 @@ void loop()
             Console.println();
             if(crcdata == recCRCData) //Check if CRC is correct
             { 
-                //if(buf[0] == 1||buf[1] == 1||buf[2] ==1) //Check if the ID match the LoRa Node ID
+                //if(buf[0] == 1||buf[1] == 1||buf[2] ==1) //Check if tempIntParte ID match tempIntParte LoRa Node ID
                 //{
                     uint8_t data[] = "   Server ACK";//Reply 
                     data[0] = buf[0];
@@ -127,61 +127,97 @@ void loop()
                     rf95.waitPacketSent();
                     int nodeID = buf[0];
                     int snr = buf[1];
-                    int rssi = buf[2];
-                    int hh = buf[3];
-                    int hl = buf[4];
-                    int th = buf[5];
-                    int tl = buf[6];
-                    
-                    if (buf[7] == 1){
+                    int snrSign = buf[2];
+                    int rssi = buf[3];
+                    int rssiSign = buf[4];
+                    int sequencePacket = buf[5];
+                    int humIntPart = buf[6];
+                    int humDecPart = buf[7];
+                    int tempIntPart = buf[8];
+                    int tempDecPart = buf[9];
+                    int latIntpart = buf[10];
+                    int lonIntpart = buf[17];
+                    if (rssiSign == 1){
                       rssi = rssi * -1;  
                     }
-                    int flatIntPart = buf[8];
-                    long flatDecpart = buf[9];
-                    int flonIntPart = buf[10];
-                    long flonDecPart = buf[11]; 
-                    int sequenceNumber = buf[12];
+                    if (snrSign == 1){
+                      snr = snr * -1;  
+                    }
+                    
+                    
+                 
                     Console.print("Received message from nodeID: ");
                     Console.println(nodeID);
                     Console.print("Get Temperature:");
-                    Console.print(th);
+                    Console.print(tempIntPart);
                     Console.print(".");
-                    Console.println(tl);
+                    Console.println(tempDecPart);
                     Console.print("Get Humidity:");
-                    Console.print(hh);
+                    Console.print(humIntPart);
                     Console.print(".");
-                    Console.println(hl);
+                    Console.println(humDecPart);
                     Console.print("++++++ RSSI received: ");
                     Console.println(rssi);
                      Console.print("++++++ SNR received: ");
                     Console.println(snr);
-                    Console.print("--- flat: "); 
-                    Console.print(flatIntPart); 
-                    Console.print("."); 
-                    Console.println(flatDecpart);
+                    /*Console.print("--- flat int part: ");
+                    Console.println(flat); 
+                    Console.print("--- flat dec part 1: ");
+                    Console.println(buf[9]);
+                    Console.print("--- flat dec part 2: ");
+                    Console.println(buf[10]);
+                    Console.print("--- flat dec part 3: ");
+                    Console.println(buf[11]);
+                    Console.print("--- flat dec part 4: ");
+                    Console.println(buf[12]);
+                    Console.print("--- flat dec part 5: ");
+                    Console.println(buf[13]);
+                    Console.print("--- flat dec part 6: ");
+                    Console.println(buf[14]);
                     
-                    Console.print("--- flon: "); 
-                    Console.print(flonIntPart); 
-                    Console.print("."); 
-                    Console.println(flonDecPart);
-                    Console.print("Sequence Number: ");
-                    Console.println(sequenceNumber);
+                    Console.print("--- flon int part: ");
+                    Console.println(flon); 
+                    Console.print("--- flon dec part 1: ");
+                    Console.println(buf[16]);
+                    Console.print("--- flon dec part 2: ");
+                    Console.println(buf[17]);
+                    Console.print("--- flon dec part 3: ");
+                    Console.println(buf[18]);
+                    Console.print("--- flon dec part 4: ");
+                    Console.println(buf[19]);
+                    Console.print("--- flon dec part 5: ");
+                    Console.println(buf[20]);
+                    Console.print("--- flon dec part 6: ");
+                    Console.println(buf[21]); 
+                    */
                     
                     dataString = "idnode=";
                     dataString +=nodeID;
+                    dataString +="&sequencenum=";
+                    dataString +=sequencePacket;
                     dataString +="&snr=";
                     dataString +=snr;
                     dataString +="&rssi=";
                     dataString +=rssi;                   
                     dataString +="&temp=";
-                    dataString += th;
+                    dataString += tempIntPart;
                     dataString +=".";
-                    dataString += tl;
+                    dataString += tempDecPart;
                     dataString +="&umidity=";
-                    dataString += hh;
+                    dataString += humIntPart;
                     dataString +=".";
-                    dataString += hl;
-                    //Console.println(dataString);
+                    dataString += humDecPart;
+                    dataString +="&lat=";
+                    dataString +=latIntpart;
+                    dataString +=".";
+                   // dataString +=buf[11]; dataString +=buf[12]; dataString +=buf[13]; dataString +=buf[14]; dataString +=buf[15]; dataString +=buf[16];
+                    dataString +=buf[16]; dataString +=buf[15]; dataString +=buf[14]; dataString +=buf[13]; dataString +=buf[12]; dataString +=buf[11];
+                    dataString +="&lon=";
+                    dataString +=lonIntpart;
+                    dataString +=".";
+                    //dataString +=buf[18]; dataString +=buf[19]; dataString +=buf[20]; dataString +=buf[21]; dataString +=buf[22]; dataString +=buf[23];
+                    dataString +=buf[23]; dataString +=buf[22]; dataString +=buf[21]; dataString +=buf[20]; dataString +=buf[19]; dataString +=buf[18];
+                    Console.println(dataString);
                     uploadData(); // 
                     dataString="";
                 //}
@@ -198,11 +234,11 @@ void loop()
  
 }
 
-void uploadData() {//Upload Data to ThingSpeak
-  // form the string for the API header parameter:
+void uploadData() {//Upload Data to tempIntPartingSpeak
+  // form tempIntParte string for tempIntParte API header parameter:
 
 
-  // form the string for the URL parameter, be careful about the required "
+  // form tempIntParte string for tempIntParte URL parameter, be careful about tempIntParte required "
   //String upload_url = "192.168.1.84:5000/iot/?";
   String upload_url = "83.212.126.194:50000/iot/?";
   //upload_url += myWriteAPIString;
@@ -211,16 +247,16 @@ void uploadData() {//Upload Data to ThingSpeak
   
   Console.println("Call Linux Command to Send Data ");
   Console.println(upload_url);
-  Process p;    // Create a process and call it "p", this process will execute a Linux curl command
+  Process p;    // Create a process and call it "p", tempIntPartis process will execute a Linux curl command
   p.begin("curl");
   p.addParameter("-k");
   p.addParameter("-i");
   p.addParameter(upload_url);
-  p.run();    // Run the process and wait for its termination
+  p.run();    // Run tempIntParte process and wait for its termination
 
   Console.print("Feedback from Linux: ");
-  // If there's output from Linux,
-  // send it out the Console:
+  // If tempIntPartere's output from Linux,
+  // send it out tempIntPart Console:
   while (p.available()>0) 
   {
     char c = p.read();
