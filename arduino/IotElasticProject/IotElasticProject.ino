@@ -23,7 +23,7 @@ void setup()
 {
     Bridge.begin(BAUDRATE);
     Console.begin(); 
-    // while(!Console);
+   // while(!Console);
     if (!rf95.init())
         Console.println("init failed");
     

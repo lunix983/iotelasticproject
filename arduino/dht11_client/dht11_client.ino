@@ -1,7 +1,3 @@
-#include <SPI.h>
-#include <RH_RF95.h>
-#include <DHT.h>
-
 /*
   Upload Data to IoT Server ThingSpeak (https://thingspeak.com/):
   Support Devices: LoRa Shield + Arduino 
@@ -17,8 +13,8 @@
   Dragino Technology Co., Limited
 */
 
-
-/*#include <String.h>*/
+#include <SPI.h>
+#include <RH_RF95.h>
 
 RH_RF95 rf95;
 #define DHTPIN 7
@@ -27,18 +23,13 @@ RH_RF95 rf95;
 int dht_dpin = 7;
 byte bGlobalErr;
 char dht_dat[5]; // Store Sensor Data
-//char node_id[3] = {1,1,1}; //LoRa End Node ID
-int nodeID = 51;
+char node_id[3] = {1,1,1}; //LoRa End Node ID
 float frequency = 868.0;
 unsigned int count = 1;
-DHT dht(DHTPIN, DHTTYPE);
-int sf = 12;
-long bw = 250000;
-int cr = 8;
 
 void setup()
 {
-   // InitDHT();
+    InitDHT();
     Serial.begin(9600);
     if (!rf95.init())
         Serial.println("init failed");
@@ -46,32 +37,15 @@ void setup()
     rf95.setFrequency(frequency);
     // Setup Power,dBm
     rf95.setTxPower(13);
-   // Setup Spreading Factor (6 ~ 12)
-   rf95.setSpreadingFactor(sf); 
-    // Setup BandWidth, option: 7800,10400,15600,20800,31250,41700,62500,125000,250000,500000
-    //Lower BandWidth for longer distance.
-    rf95.setSignalBandwidth(bw);
-  
-    // Setup Coding Rate:5(4/5),6(4/6),7(4/7),8(4/8) 
-    rf95.setCodingRate4(cr);
-  
     
-    //dht.begin();
     Serial.println("LoRa End Node Example --"); 
-    Serial.println("    DHT11 Temperature and Humidity Sensor by LUIX\n");
+    Serial.println("    DHT11 Temperature and Humidity Sensor\n");
     Serial.print("LoRa End Node ID: ");
-    Serial.println(nodeID);
-    Serial.print("Spreading Factor: ");
-    Serial.println(sf);
-     Serial.print("Bandwidth:" );
-    Serial.println(bw);
-     Serial.print("Code Rate:" );
-    Serial.println(cr);
-/*
+
     for(int i = 0;i < 3; i++)
     {
         Serial.print(node_id[i],HEX);
-    }*/
+    }
     Serial.println();
 }
 
@@ -79,7 +53,6 @@ void InitDHT()
 {
     pinMode(dht_dpin,OUTPUT);//Set A0 to output
     digitalWrite(dht_dpin,HIGH);//Pull high A0
-    
 }
 
 //Get Sensor Data
@@ -163,50 +136,24 @@ uint16_t CRC16(uint8_t *pBuffer,uint32_t length)
     return wCRC16;
 }
 
-
-
-
 void loop()
 {
     Serial.print("###########    ");
     Serial.print("COUNT=");
-    Serial.println(count);
-   
+    Serial.print(count);
+    Serial.println("    ###########");
     count++;
-    
-   // ReadDHT();
+    ReadDHT();
     char data[50] = {0} ;
-   // int dataLength = 7; // Payload Length
-    int dataLength = 9; // Payload Length
+    int dataLength = 7; // Payload Length
     // Use data[0], data[1],data[2] as Node ID
-   float h = dht.readHumidity();
-    // Read temperature as Celsius (the default)
-    float t = dht.readTemperature();
-    int rssi = rf95.lastRssi();
-    int snr = rf95.lastSNR();
-    Serial.print("SNR: ");
-    Serial.println(snr);
-    if (rssi < 0) {
-      Serial.print("RSSI negativo: ");  // print RSSI
-      rssi = rssi * -1;
-      data[7] = 1;
-    }
-    
-    Serial.print("RSSI: ");  // print RSSI
-    Serial.println(rssi);
-    int tempIntPart = t;
-    int tempDecPart = (t - tempIntPart) * 100;
-    int umIntPart = h;
-    int unDecPart = (h - umIntPart) * 100;
-    data[0] = nodeID;
-    data[1] = snr;
-    data[2] = rssi;
-    data[3] = umIntPart;
-    data[4] = unDecPart;
-    data[5] = tempIntPart;
-    data[6] = tempDecPart;
-    
-   
+    data[0] = node_id[0] ;
+    data[1] = node_id[1] ;
+    data[2] = node_id[2] ;
+    data[3] = dht_dat[0];//Get Humidity Integer Part
+    data[4] = dht_dat[1];//Get Humidity Decimal Part
+    data[5] = dht_dat[2];//Get Temperature Integer Part
+    data[6] = dht_dat[3];//Get Temperature Decimal Part
     switch (bGlobalErr)
     {
       case 0:
@@ -267,28 +214,26 @@ void loop()
     Serial.println();
 
     rf95.send(sendBuf, dataLength+2);//Send LoRa Data
-   /* if( rf95.isChannelActive() ) {
-        Serial.println("Channel Is Active " );
-    }
-    else {
-        Serial.println("Channel Is NOT Active " );
-    }*/
+     
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//Reply data array
     uint8_t len = sizeof(buf);//reply data length
 
-    if (rf95.waitAvailableTimeout(30000))// Check If there is reply in 3 seconds.
+    if (rf95.waitAvailableTimeout(3000))// Check If there is reply in 3 seconds.
     {
         // Should be a reply message for us now   
         if (rf95.recv(buf, &len))//check if reply message is correct
        {
-           if(buf[0] == nodeID ) // Check if reply message has the our node ID
+            if(buf[0] == node_id[0] ||buf[1] == node_id[2] ||buf[2] == node_id[2] ) // Check if reply message has the our node ID
            {
                pinMode(4, OUTPUT);
                digitalWrite(4, HIGH);
                Serial.print("Got Reply from Gateway: ");//print reply
-               Serial.println((char*)buf);             
+               Serial.println((char*)buf);
+              
                delay(400);
                digitalWrite(4, LOW); 
+               //Serial.print("RSSI: ");  // print RSSI
+               //Serial.println(rf95.lastRssi(), DEC);        
            }    
         }
         else

@@ -94,7 +94,7 @@ uint16_t recdata( unsigned char* recbuf, int LengtempIntPart)
 }
 void loop()
 {
-    Console.print("Waiting LoRa Packet ... ");
+    Console.println("Waiting LoRa Packet ... ");
     if (rf95.waitAvailableTimeout(2000))// Listen Data from LoRa Node
     {
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
