@@ -22,7 +22,7 @@ RH_RF95 rf95;
 //For product: LG01. 
 #define BAUDRATE 115200
 
-String myWriteAPIString = "0QKMFZUSWTUHEXYQ";
+
 uint16_t crcdata = 0;
 uint16_t recCRCData = 0;
 float frequency = 868.0;
@@ -40,7 +40,7 @@ void setup()
     // while(!Console);
     if (!rf95.init())
         Console.println("init failed");
-    ;
+    
     // Setup ISM frequency
     rf95.setFrequency(frequency);
     // Setup Power,dBm
@@ -52,7 +52,7 @@ void setup()
     
     
     Console.println("LoRa Gateway Example  --");
-    Console.println("    Upload Single Data to LuixCloud");
+    Console.println("    Upload Gps Coord and DHT values to LuixCloud");
 }
 
 uint16_t calcByte(uint16_t crc, uint8_t b)
@@ -94,12 +94,7 @@ uint16_t recdata( unsigned char* recbuf, int LengtempIntPart)
 }
 void loop()
 {
-    /*Console.print("Spreading Factor: ");
-    Console.println(sf);
-    Console.print("BandwidtempIntPart: ");
-    Console.println(bw);
-    Console.print("Coding Rate: ");
-    Console.println(cr);*/
+    Console.print("Waiting LoRa Packet ... ");
     if (rf95.waitAvailableTimeout(2000))// Listen Data from LoRa Node
     {
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
@@ -143,54 +138,7 @@ void loop()
                     if (snrSign == 1){
                       snr = snr * -1;  
                     }
-                    
-                    
-                 
-                    Console.print("Received message from nodeID: ");
-                    Console.println(nodeID);
-                    Console.print("Get Temperature:");
-                    Console.print(tempIntPart);
-                    Console.print(".");
-                    Console.println(tempDecPart);
-                    Console.print("Get Humidity:");
-                    Console.print(humIntPart);
-                    Console.print(".");
-                    Console.println(humDecPart);
-                    Console.print("++++++ RSSI received: ");
-                    Console.println(rssi);
-                     Console.print("++++++ SNR received: ");
-                    Console.println(snr);
-                    /*Console.print("--- flat int part: ");
-                    Console.println(flat); 
-                    Console.print("--- flat dec part 1: ");
-                    Console.println(buf[9]);
-                    Console.print("--- flat dec part 2: ");
-                    Console.println(buf[10]);
-                    Console.print("--- flat dec part 3: ");
-                    Console.println(buf[11]);
-                    Console.print("--- flat dec part 4: ");
-                    Console.println(buf[12]);
-                    Console.print("--- flat dec part 5: ");
-                    Console.println(buf[13]);
-                    Console.print("--- flat dec part 6: ");
-                    Console.println(buf[14]);
-                    
-                    Console.print("--- flon int part: ");
-                    Console.println(flon); 
-                    Console.print("--- flon dec part 1: ");
-                    Console.println(buf[16]);
-                    Console.print("--- flon dec part 2: ");
-                    Console.println(buf[17]);
-                    Console.print("--- flon dec part 3: ");
-                    Console.println(buf[18]);
-                    Console.print("--- flon dec part 4: ");
-                    Console.println(buf[19]);
-                    Console.print("--- flon dec part 5: ");
-                    Console.println(buf[20]);
-                    Console.print("--- flon dec part 6: ");
-                    Console.println(buf[21]); 
-                    */
-                    
+                  
                     dataString = "idnode=";
                     dataString +=nodeID;
                     dataString +="&sequencenum=";
@@ -210,14 +158,12 @@ void loop()
                     dataString +="&lat=";
                     dataString +=latIntpart;
                     dataString +=".";
-                   // dataString +=buf[11]; dataString +=buf[12]; dataString +=buf[13]; dataString +=buf[14]; dataString +=buf[15]; dataString +=buf[16];
                     dataString +=buf[16]; dataString +=buf[15]; dataString +=buf[14]; dataString +=buf[13]; dataString +=buf[12]; dataString +=buf[11];
                     dataString +="&lon=";
                     dataString +=lonIntpart;
-                    dataString +=".";
-                    //dataString +=buf[18]; dataString +=buf[19]; dataString +=buf[20]; dataString +=buf[21]; dataString +=buf[22]; dataString +=buf[23];
+                    dataString +="."; 
                     dataString +=buf[23]; dataString +=buf[22]; dataString +=buf[21]; dataString +=buf[20]; dataString +=buf[19]; dataString +=buf[18];
-                    Console.println(dataString);
+                   
                     uploadData(); // 
                     dataString="";
                 //}
@@ -227,8 +173,7 @@ void loop()
          }
          else
          {
-              //Console.println("recv failed");
-              ;
+              Console.println("recv failed");
           }
      }
  
@@ -239,21 +184,20 @@ void uploadData() {//Upload Data to tempIntPartingSpeak
 
 
   // form tempIntParte string for tempIntParte URL parameter, be careful about tempIntParte required "
-  //String upload_url = "192.168.1.84:5000/iot/?";
+  
   String upload_url = "83.212.126.194:50000/iot/?";
-  //upload_url += myWriteAPIString;
-  //upload_url += "&";
+  
   upload_url += dataString  ;
   
   Console.println("Call Linux Command to Send Data ");
-  Console.println(upload_url);
+  Console.println(upload_url+=dataString);
   Process p;    // Create a process and call it "p", tempIntPartis process will execute a Linux curl command
   p.begin("curl");
   p.addParameter("-k");
   p.addParameter("-i");
   p.addParameter(upload_url);
   p.run();    // Run tempIntParte process and wait for its termination
-
+  Console.print("Exit code: "); Console.println(p.exitValue());
   Console.print("Feedback from Linux: ");
   // If tempIntPartere's output from Linux,
   // send it out tempIntPart Console:
