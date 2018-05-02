@@ -26,7 +26,11 @@ String myWriteAPIString = "0QKMFZUSWTUHEXYQ";
 uint16_t crcdata = 0;
 uint16_t recCRCData = 0;
 float frequency = 868.0;
-String dataString = "";
+String dataString = "iotdata=";
+int sf = 12;
+int bw = 250000;
+int cr = 8;
+
 
 void uploadData(); // Upload Data to ThingSpeak.
 
@@ -42,6 +46,9 @@ void setup()
     rf95.setFrequency(frequency);
     // Setup Power,dBm
     rf95.setTxPower(13);
+   // rf95.setSpreadingFactor(sf);
+  //  rf95.setSignalBandwidth(bw);
+//    rf95.setCodingRate(cr);
     
     Console.println("LoRa Gateway Example  --");
     Console.println("    Upload Single Data to ThinkSpeak");
@@ -102,42 +109,187 @@ void loop()
             Console.println();
             if(crcdata == recCRCData) //Check if CRC is correct
             { 
-                if(buf[0] == 1||buf[1] == 1||buf[2] ==1) //Check if the ID match the LoRa Node ID
-                {
-                    uint8_t data[] = "   Server ACK";//Reply 
-                    data[0] = buf[0];
-                    data[1] = buf[1];
-                    data[2] = buf[2];
+                
+                    uint8_t data[] = "    GatewayDragino ACK";//Reply 
+                    
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
-                    int newData[4] = {0, 0, 0, 0}; //Store Sensor Data here
-                    for (int i = 0; i < 4; i++)
+                    uint8_t i;
+                    /*
+                    for (i=0; i<24; i++)
                     {
-                        newData[i] = buf[i + 3];
+                      Console.print(buf[i]);
+                      dataString += buf[i];
+                      
+                         /* if (i==0)
+                          {
+                            dataString = "idnode=";
+                            dataString += buf[i];
+                          }
+                          if (i==1)
+                          {
+                            dataString += "&sequencenum=";
+                            dataString += buf[i];
+                          }
+                          if (i==2)
+                          {
+                            dataString += "&snr=";
+                            dataString += buf[i];
+                          }
+                          if (i==3)
+                          {
+                            dataString += "&rssi=";
+                            dataString += buf[i];
+                          }*/
+                          
+                          /*
+                          switch (i)
+                          {
+                            case 0:
+                                dataString = "idnode=";
+                                dataString += buf[i];
+                                break;
+                            case 1:
+                                dataString += "&sequencenum=";
+                                dataString += buf[i];
+                                break;
+                            case 2: // gestione del segno neg/pos di snr
+                                if (buf[i] == 1)
+                                {
+                                  dataString += "&snr=-";
+                                }
+                                else
+                                {
+                                  dataString += "&snr=";
+                                }
+                                break;
+                            case 3:
+                                dataString += buf[i];
+                                break;
+                            case 4: // gestione del segno neg/pos di rssi
+                                if (buf[i] == 1)
+                                {
+                                  dataString += "&rssi=-";
+                                }
+                                else
+                                {
+                                  dataString += "&rssi=";
+                                }
+                                break;
+                            case 5:
+                                dataString += buf[i];
+                                break;
+                            case 6:
+                                dataString += "&temp=";
+                                dataString += buf[i];
+                                break;
+                            case 7:
+                                dataString += ".";
+                                dataString += buf[i];
+                                break;
+                            case 8:
+                                dataString += "&umidity=";
+                                dataString += buf[i];
+                                break;
+                            case 9:
+                                dataString += buf[i];
+                                break;
+                            case 10:
+                                dataString += "&lat=";
+                                dataString += buf[i];
+                                dataString += ".";
+                                break;
+                            case 11:
+                                dataString += buf[i];
+                                break;
+                            case 12:
+                                dataString += buf[i];
+                                break;
+                            case 13:
+                                dataString += buf[i];
+                                break;
+                            case 14:
+                                dataString += buf[i];
+                                break;
+                            case 15:
+                                dataString += buf[i];
+                                break;
+                            case 16:
+                                dataString += buf[i];
+                                break;
+                            case 17:
+                                dataString += "&lon=";
+                                dataString += buf[i];
+                                dataString += ".";
+                                break;
+                            case 18:
+                                dataString += buf[i];
+                                break;
+                            case 19:
+                                dataString += buf[i];
+                                break;
+                            case 20:
+                                dataString += buf[i];
+                                break;
+                            case 21:
+                                dataString += buf[i];
+                                break;
+                            case 22:
+                                dataString += buf[i];
+                                break;
+                            case 23:
+                                dataString += buf[i];
+                                break;
+                          }*/                                                      
+                    //}
+                    Console.println();
+               /*
+                    dataString = "idnode=";
+                    dataString += buf[0];
+                    dataString +="&sequencenum=";
+                    dataString += buf[1];
+                    dataString +="&snr=";
+                    dataString += buf[2];
+             /*       if (buf[3] == 1)
+                    {
+                      dataString +="&snr=-";
                     }
-                    int hh = newData[0];
-                    int hl = newData[1];
-                    int th = newData[2];
-                    int tl = newData[3];
-                    Console.print("Get Temperature:");
-                    Console.print(th);
-                    Console.print(".");
-                    Console.println(tl);
-                    Console.print("Get Humidity:");
-                    Console.print(hh);
-                    Console.print(".");
-                    Console.println(hl);
-                                       
-                    dataString ="field1=";
-                    dataString += th;
+                    else
+                    {
+                      dataString +="&snr=";
+                    }
+                    dataString += buf[4];
+                    if (buf[5] == 1)
+                    {
+                      dataString +="&rssi=-";
+                    }
+                    else
+                    {
+                      dataString +="&rssi=";
+                    }
+                    dataString += buf[6];
+                    dataString +="&temp=";
+                    dataString +=buf[7];
                     dataString +=".";
-                    dataString += tl;
-                    //dataString ="field2=";
-                    //dataString += h;
+                    dataString +=buf[8];
+                    dataString +="&umidity=";
+                    dataString +=buf[9];
+                    dataString +=".";
+                    dataString +=buf[9];*/
+                    dataString = "idnode=";
+                    dataString.concat(buf[0]);
+                    dataString.concat("&sequencenum=");
+                    dataString.concat(buf[1]);
+                    /*dataString.concat("&snr=");
+                    dataString.concat(buf[2]);*/
+
                     
-                    uploadData(); // 
+                    Console.print("DataString  ");
+                    Console.println(dataString);
+                    
+                    uploadData();
                     dataString="";
-                }
+                                    
             } 
             else 
               Console.println(" CRC Fail");     
@@ -148,18 +300,18 @@ void loop()
               ;
           }
      }
- 
-}
 
+}
 void uploadData() {//Upload Data to ThingSpeak
   // form the string for the API header parameter:
 
 
   // form the string for the URL parameter, be careful about the required "
-  String upload_url = "https://api.thingspeak.com/update?api_key=";
+/*  String upload_url = "https://api.thingspeak.com/update?api_key=";
   upload_url += myWriteAPIString;
   upload_url += "&";
-  upload_url += dataString;
+  upload_url += dataString;*/
+String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&rssi=-104&temp=25.0&umidity=29.0&lat=44.509231&lon=11.351216";
 
   Console.println("Call Linux Command to Send Data");
   Process p;    // Create a process and call it "p", this process will execute a Linux curl command
