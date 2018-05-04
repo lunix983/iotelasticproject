@@ -33,6 +33,7 @@ void uploadData(); // Upload Data to tempIntPartingSpeak.
 int sf = 12;
 long bw = 250000;
 int cr = 8;
+//Process p;
 void setup()
 {
     Bridge.begin(BAUDRATE);
@@ -46,9 +47,9 @@ void setup()
     // Setup Power,dBm
     rf95.setTxPower(13);
     
-    rf95.setSpreadingFactor(sf);
-    rf95.setSignalBandwidth(bw);
-    rf95.setCodingRate4(cr);
+   // rf95.setSpreadingFactor(sf);
+    //rf95.setSignalBandwidth(bw);
+    //rf95.setCodingRate4(cr);
     
     
     Console.println("LoRa Gateway Example  --");
@@ -185,18 +186,21 @@ void uploadData() {//Upload Data to tempIntPartingSpeak
 
   // form tempIntParte string for tempIntParte URL parameter, be careful about tempIntParte required "
   
-  String upload_url = "83.212.126.194:50000/iot/?";
+  //String upload_url = "83.212.126.194:50000/iot/?";
   
-  upload_url += dataString  ;
+//  upload_url += dataString  ;
   
   Console.println("Call Linux Command to Send Data ");
-  Console.println(upload_url+=dataString);
-  Process p;    // Create a process and call it "p", tempIntPartis process will execute a Linux curl command
+ // String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&rssi=-104&temp=25.0&umidity=29.0&lat=44.509231&lon=11.351216";
+  String upload_url = "83.212.126.194:50000/test/?idnode=4444&seq=164&snr=8&rssi=-104&temp=25.4";
+  Console.println(upload_url);
+  Process p;
+  //p.runShellCommand(upload_url);
   p.begin("curl");
   p.addParameter("-k");
   p.addParameter("-i");
   p.addParameter(upload_url);
-  p.run();    // Run tempIntParte process and wait for its termination
+  p.run();
   Console.print("Exit code: "); Console.println(p.exitValue());
   Console.print("Feedback from Linux: ");
   // If tempIntPartere's output from Linux,
@@ -206,6 +210,7 @@ void uploadData() {//Upload Data to tempIntPartingSpeak
     char c = p.read();
     Console.write(c);
   }
+  p.close();
   Console.println("");
   Console.println("Call Luix NetworkServer Finished");
   Console.println(dataString);

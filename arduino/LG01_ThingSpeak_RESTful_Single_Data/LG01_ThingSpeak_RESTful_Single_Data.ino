@@ -30,7 +30,7 @@ String dataString = "iotdata=";
 int sf = 12;
 int bw = 250000;
 int cr = 8;
-
+Process p;
 
 void uploadData(); // Upload Data to ThingSpeak.
 
@@ -92,7 +92,24 @@ uint16_t recdata( unsigned char* recbuf, int Length)
     recCRCData |= recbuf[Length - 2];
 }
 void loop()
-{
+{   
+
+    struct LoraPayLoad 
+    {
+      int idNode;
+      int snr;
+      int snrSign;
+      int rssi;
+      int rssiSign;
+      int sequence;
+      float um;
+      float temp;
+      
+      float lat;
+      
+      float lon;
+    }loradata;
+    
     if (rf95.waitAvailableTimeout(2000))// Listen Data from LoRa Node
     {
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
@@ -114,194 +131,65 @@ void loop()
                     
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
-                    uint8_t i;
-                    /*
-                    for (i=0; i<24; i++)
-                    {
-                      Console.print(buf[i]);
-                      dataString += buf[i];
-                      
-                         /* if (i==0)
-                          {
-                            dataString = "idnode=";
-                            dataString += buf[i];
-                          }
-                          if (i==1)
-                          {
-                            dataString += "&sequencenum=";
-                            dataString += buf[i];
-                          }
-                          if (i==2)
-                          {
-                            dataString += "&snr=";
-                            dataString += buf[i];
-                          }
-                          if (i==3)
-                          {
-                            dataString += "&rssi=";
-                            dataString += buf[i];
-                          }*/
-                          
-                          /*
-                          switch (i)
-                          {
-                            case 0:
-                                dataString = "idnode=";
-                                dataString += buf[i];
-                                break;
-                            case 1:
-                                dataString += "&sequencenum=";
-                                dataString += buf[i];
-                                break;
-                            case 2: // gestione del segno neg/pos di snr
-                                if (buf[i] == 1)
-                                {
-                                  dataString += "&snr=-";
-                                }
-                                else
-                                {
-                                  dataString += "&snr=";
-                                }
-                                break;
-                            case 3:
-                                dataString += buf[i];
-                                break;
-                            case 4: // gestione del segno neg/pos di rssi
-                                if (buf[i] == 1)
-                                {
-                                  dataString += "&rssi=-";
-                                }
-                                else
-                                {
-                                  dataString += "&rssi=";
-                                }
-                                break;
-                            case 5:
-                                dataString += buf[i];
-                                break;
-                            case 6:
-                                dataString += "&temp=";
-                                dataString += buf[i];
-                                break;
-                            case 7:
-                                dataString += ".";
-                                dataString += buf[i];
-                                break;
-                            case 8:
-                                dataString += "&umidity=";
-                                dataString += buf[i];
-                                break;
-                            case 9:
-                                dataString += buf[i];
-                                break;
-                            case 10:
-                                dataString += "&lat=";
-                                dataString += buf[i];
-                                dataString += ".";
-                                break;
-                            case 11:
-                                dataString += buf[i];
-                                break;
-                            case 12:
-                                dataString += buf[i];
-                                break;
-                            case 13:
-                                dataString += buf[i];
-                                break;
-                            case 14:
-                                dataString += buf[i];
-                                break;
-                            case 15:
-                                dataString += buf[i];
-                                break;
-                            case 16:
-                                dataString += buf[i];
-                                break;
-                            case 17:
-                                dataString += "&lon=";
-                                dataString += buf[i];
-                                dataString += ".";
-                                break;
-                            case 18:
-                                dataString += buf[i];
-                                break;
-                            case 19:
-                                dataString += buf[i];
-                                break;
-                            case 20:
-                                dataString += buf[i];
-                                break;
-                            case 21:
-                                dataString += buf[i];
-                                break;
-                            case 22:
-                                dataString += buf[i];
-                                break;
-                            case 23:
-                                dataString += buf[i];
-                                break;
-                          }*/                                                      
-                    //}
-                    Console.println();
-               /*
-                    dataString = "idnode=";
-                    dataString += buf[0];
-                    dataString +="&sequencenum=";
-                    dataString += buf[1];
-                    dataString +="&snr=";
-                    dataString += buf[2];
-             /*       if (buf[3] == 1)
-                    {
-                      dataString +="&snr=-";
-                    }
-                    else
-                    {
-                      dataString +="&snr=";
-                    }
-                    dataString += buf[4];
-                    if (buf[5] == 1)
-                    {
-                      dataString +="&rssi=-";
-                    }
-                    else
-                    {
-                      dataString +="&rssi=";
-                    }
-                    dataString += buf[6];
-                    dataString +="&temp=";
-                    dataString +=buf[7];
-                    dataString +=".";
-                    dataString +=buf[8];
-                    dataString +="&umidity=";
-                    dataString +=buf[9];
-                    dataString +=".";
-                    dataString +=buf[9];*/
-                    dataString = "idnode=";
-                    dataString.concat(buf[0]);
-                    dataString.concat("&sequencenum=");
-                    dataString.concat(buf[1]);
-                    /*dataString.concat("&snr=");
-                    dataString.concat(buf[2]);*/
-
-                    
-                    Console.print("DataString  ");
-                    Console.println(dataString);
-                    
+                           
+                    loradata.idNode = buf[0];
+                    loradata.snr = buf[1];
+                    loradata.snrSign = buf[2];      
+                    loradata.rssi = buf[3];
+                    loradata.rssiSign = buf[4];
+                    loradata.sequence = buf[5];
+                    loradata.um = cancactValue(buf[6],buf[7]);
+                    loradata.temp = cancactValue(buf[8],buf[9]);
+                    loradata.lat = concatGpsCoord(buf[10],buf[16],buf[15],buf[14],buf[13],buf[12],buf[11]);
+                    loradata.lon = concatGpsCoord(buf[17],buf[23],buf[22],buf[21],buf[20],buf[19],buf[18]);
                     uploadData();
                     dataString="";
-                                    
             } 
             else 
               Console.println(" CRC Fail");     
          }
          else
          {
-              //Console.println("recv failed");
-              ;
-          }
+              Console.println("recv failed");
+         }
      }
 
+Console.print("UM: " );
+Console.println(loradata.um);
+Console.print("TEMP: " );
+Console.println(loradata.temp);
+Console.print("LAT: " );
+Console.println(loradata.lat, 6);
+Console.print("LON: " );
+Console.println(loradata.lon,6);
+
+
+dataString=loradata.idNode;
+
 }
+
+float cancactValue(uint8_t intpart, uint8_t decpart){
+  String data="";
+  data=intpart;
+  data+=".";
+  data+=decpart;
+  return data.toFloat();
+}
+
+float concatGpsCoord(uint8_t intpart, uint8_t decpart1, uint8_t decpart2,
+                      uint8_t decpart3, uint8_t decpart4, uint8_t decpart5, uint8_t decpart6){
+  String data="";
+  data=intpart;
+  data+=".";
+  data+=decpart1;
+  data+=decpart2;
+  data+=decpart3;
+  data+=decpart4;
+  data+=decpart5;
+  data+=decpart6;
+  return data.toFloat();
+}
+
 void uploadData() {//Upload Data to ThingSpeak
   // form the string for the API header parameter:
 
@@ -314,11 +202,17 @@ void uploadData() {//Upload Data to ThingSpeak
 String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&rssi=-104&temp=25.0&umidity=29.0&lat=44.509231&lon=11.351216";
 
   Console.println("Call Linux Command to Send Data");
-  Process p;    // Create a process and call it "p", this process will execute a Linux curl command
+  
+  
+      // Create a process and call it "p", this process will execute a Linux curl command
   p.begin("curl");
   p.addParameter("-k");
   p.addParameter(upload_url);
   p.run();    // Run the process and wait for its termination
+
+
+
+
 
   Console.print("Feedback from Linux: ");
   // If there's output from Linux,
@@ -328,6 +222,7 @@ String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&r
     char c = p.read();
     Console.write(c);
   }
+  p.close();
   Console.println("");
   Console.println("Call Finished");
   Console.println("####################################");
