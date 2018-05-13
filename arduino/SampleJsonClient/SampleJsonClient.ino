@@ -35,18 +35,10 @@ void setup()
     Console.println("Jason Example  --");
     Console.println("    Client upload json data");
       // Initialize Ethernet library
-  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-  if (!Ethernet.begin(mac)) {
-    Console.println("Failed to configure Ethernet");
-    return;
-  }
-  else 
-  {
-    Console.println("Ethernet configuration done");
-  }
-  delay(1000);
-
-  Console.println(F("Connecting..."));
+  
+  
+/*
+  Console.println("Connecting...");
 
   // Connect to HTTP server
   EthernetClient client;
@@ -55,8 +47,12 @@ void setup()
     Console.println(F("Connection failed"));
     return;
   }
+  else
+  {
+    Console.println("Connection done");
+  }
 
-  Console.println(F("Connected!"));
+  Console.println("++++++ Connected!");
 
   // Send HTTP request
   client.println(F("GET /example.json HTTP/1.0"));
@@ -103,13 +99,24 @@ void setup()
   Console.println(root["data"][1].as<char*>());
 
   // Disconnect
-  client.stop();
+  client.stop();*/
 }
 
 
 
 void loop()
 {
+/*
+  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+  if (!Ethernet.begin(mac)) {
+    Console.println("Failed to configure Ethernet");
+    //return;
+  }
+  else 
+  {
+    Console.println("Ethernet configuration done");
+  }*/
+  delay(3000);
   
   Console.println("####################################");
   Console.println("");

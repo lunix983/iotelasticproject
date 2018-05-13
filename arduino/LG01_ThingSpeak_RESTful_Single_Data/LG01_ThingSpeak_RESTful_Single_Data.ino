@@ -22,7 +22,7 @@ RH_RF95 rf95;
 //For product: LG01. 
 #define BAUDRATE 115200
 
-String myWriteAPIString = "0QKMFZUSWTUHEXYQ";
+
 uint16_t crcdata = 0;
 uint16_t recCRCData = 0;
 float frequency = 868.0;
@@ -30,9 +30,24 @@ String dataString = "iotdata=";
 int sf = 12;
 int bw = 250000;
 int cr = 8;
-Process p;
+
 
 void uploadData(); // Upload Data to ThingSpeak.
+
+struct LoraPayLoad 
+    {
+      String idNode;
+      String sequence;
+      String snr;
+      String rssi;
+      String um;
+      String temp;
+      String lat;
+      String lon;
+    }loradata;
+
+
+String* dataPtr = (String*)&loradata;
 
 void setup()
 {
@@ -93,23 +108,6 @@ uint16_t recdata( unsigned char* recbuf, int Length)
 }
 void loop()
 {   
-
-    struct LoraPayLoad 
-    {
-      int idNode;
-      int snr;
-      int snrSign;
-      int rssi;
-      int rssiSign;
-      int sequence;
-      float um;
-      float temp;
-      
-      float lat;
-      
-      float lon;
-    }loradata;
-    
     if (rf95.waitAvailableTimeout(2000))// Listen Data from LoRa Node
     {
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
@@ -131,19 +129,38 @@ void loop()
                     
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
-                           
-                    loradata.idNode = buf[0];
-                    loradata.snr = buf[1];
-                    loradata.snrSign = buf[2];      
-                    loradata.rssi = buf[3];
-                    loradata.rssiSign = buf[4];
-                    loradata.sequence = buf[5];
+        
+                    loradata.idNode = String(buf[0]);            
+                    
+                    int snr; 
+                    if (buf[2] == 1)
+                    {
+                      snr = buf[1] * -1;
+                    }
+                    else
+                    {
+                      snr = buf[1];
+                    }
+                    loradata.snr = snr;
+                    //loradata.rssi = String(buf[3]);
+                    int rssi;
+                    if (buf[4] == 1)
+                    {
+                      rssi = buf[3] * -1;
+                    }
+                    else
+                    {
+                      rssi = buf[3];
+                    }
+                    //loradata.rssiSign = String(buf[4]);
+                    loradata.rssi = rssi;
+                    loradata.sequence = String(buf[5]);
                     loradata.um = cancactValue(buf[6],buf[7]);
                     loradata.temp = cancactValue(buf[8],buf[9]);
                     loradata.lat = concatGpsCoord(buf[10],buf[16],buf[15],buf[14],buf[13],buf[12],buf[11]);
                     loradata.lon = concatGpsCoord(buf[17],buf[23],buf[22],buf[21],buf[20],buf[19],buf[18]);
                     uploadData();
-                    dataString="";
+                    
             } 
             else 
               Console.println(" CRC Fail");     
@@ -156,27 +173,30 @@ void loop()
 
 Console.print("UM: " );
 Console.println(loradata.um);
+Console.print("UM: " );
+Console.println(loradata.um);
 Console.print("TEMP: " );
 Console.println(loradata.temp);
 Console.print("LAT: " );
-Console.println(loradata.lat, 6);
+Console.println(loradata.lat);
 Console.print("LON: " );
-Console.println(loradata.lon,6);
+Console.println(loradata.lon);
 
 
-dataString=loradata.idNode;
+//dataString=loradata.idNode;
 
 }
 
-float cancactValue(uint8_t intpart, uint8_t decpart){
+String cancactValue(uint8_t intpart, uint8_t decpart){
   String data="";
   data=intpart;
   data+=".";
   data+=decpart;
-  return data.toFloat();
+  //return data.toFloat();
+  return data;
 }
 
-float concatGpsCoord(uint8_t intpart, uint8_t decpart1, uint8_t decpart2,
+String concatGpsCoord(uint8_t intpart, uint8_t decpart1, uint8_t decpart2,
                       uint8_t decpart3, uint8_t decpart4, uint8_t decpart5, uint8_t decpart6){
   String data="";
   data=intpart;
@@ -187,31 +207,45 @@ float concatGpsCoord(uint8_t intpart, uint8_t decpart1, uint8_t decpart2,
   data+=decpart4;
   data+=decpart5;
   data+=decpart6;
-  return data.toFloat();
+  //return data.toFloat();
+  return data;
 }
 
-void uploadData() {//Upload Data to ThingSpeak
-  // form the string for the API header parameter:
+String createCommand(String parameter)
+{
+  String echo = "echo ";
+  String outFile = " >> /tmp/iotdata.txt";
+  String command = "";
+  command = echo;
+  command += parameter;
+  command += outFile;
+  return command;
+}
 
 
-  // form the string for the URL parameter, be careful about the required "
-/*  String upload_url = "https://api.thingspeak.com/update?api_key=";
-  upload_url += myWriteAPIString;
-  upload_url += "&";
-  upload_url += dataString;*/
-String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&rssi=-104&temp=25.0&umidity=29.0&lat=44.509231&lon=11.351216";
+void uploadData() {
 
-  Console.println("Call Linux Command to Send Data");
-  
-  
+  Console.println("Call Linux Command to Send Data");  
       // Create a process and call it "p", this process will execute a Linux curl command
-  p.begin("curl");
-  p.addParameter("-k");
-  p.addParameter(upload_url);
-  p.run();    // Run the process and wait for its termination
-
-
-
+  Process p;
+  
+  int i;
+  for (i=0; i<8; i++)
+  {
+   // Console.print("Struct data: ");
+  //  Console.println(*(dataPtr + i));
+    String command = createCommand(*(dataPtr + i));
+    Console.println("COMMAND: ");
+    Console.println(command);
+    p.runShellCommand(command);
+    p.close();
+  }
+  
+  p.runShellCommand("/usr/bin/uploaddatasw.sh");
+  p.close();
+  //p.run();    // Run the process and wait for its termination
+  p.runShellCommand("rm -f /tmp/iotdata.txt");
+  p.close();
 
 
   Console.print("Feedback from Linux: ");
@@ -228,5 +262,4 @@ String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&r
   Console.println("####################################");
   Console.println("");
 }
-
 

@@ -121,7 +121,7 @@ void loop()
                     
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
-                    int nodeID = buf[0];
+                /*    int nodeID = buf[0];
                     int snr = buf[1];
                     int snrSign = buf[2];
                     int rssi = buf[3];
@@ -164,7 +164,7 @@ void loop()
                     dataString +=lonIntpart;
                     dataString +="."; 
                     dataString +=buf[23]; dataString +=buf[22]; dataString +=buf[21]; dataString +=buf[20]; dataString +=buf[19]; dataString +=buf[18];
-                   
+                   */
                     uploadData(); // 
                     dataString="";
                 //}
@@ -192,15 +192,18 @@ void uploadData() {//Upload Data to tempIntPartingSpeak
   
   Console.println("Call Linux Command to Send Data ");
  // String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&rssi=-104&temp=25.0&umidity=29.0&lat=44.509231&lon=11.351216";
-  String upload_url = "83.212.126.194:50000/test/?idnode=4444&seq=164&snr=8&rssi=-104&temp=25.4";
+  String upload_url = "83.212.126.194:50000/test/?idnode=4444&seq=164&snr=8&rssi=-104";
+  upload_url += "&temp=25.0&umidity=29.0&lat=44.509231&lon=11.351216";
   Console.println(upload_url);
   Process p;
-  //p.runShellCommand(upload_url);
-  p.begin("curl");
-  p.addParameter("-k");
-  p.addParameter("-i");
+  p.runShellCommand("uploaddata.sh");
+ 
+ /* p.begin("curl");
   p.addParameter(upload_url);
-  p.run();
+  p.addParameter("-k");
+  p.addParameter("-i");*/
+  //p.begin("/bin/uploaddata.sh");
+  //p.run();
   Console.print("Exit code: "); Console.println(p.exitValue());
   Console.print("Feedback from Linux: ");
   // If tempIntPartere's output from Linux,
