@@ -55,12 +55,12 @@ void setup()
   // Setup Power,dBm
   rf95.setTxPower(13);
   // Setup Spreading Factor (6 ~ 12)
-  rf95.setSpreadingFactor(sf); 
+ // rf95.setSpreadingFactor(sf); 
   // Setup BandWidth, option: 7800,10400,15600,20800,31250,41700,62500,125000,250000,500000
   //Lower BandWidth for longer distance.
-  rf95.setSignalBandwidth(bw);
+ // rf95.setSignalBandwidth(bw);
   // Setup Coding Rate:5(4/5),6(4/6),7(4/7),8(4/8) 
-  rf95.setCodingRate4(cr); 
+ // rf95.setCodingRate4(cr); 
   Serial.println("    DHT11 Temperature and Humidity Sensor and GPS\n");
   Serial.print("LoRa End Node ID: "); Serial.println(nodeID);
   Serial.print("Spreading Factor: "); Serial.println(sf);
@@ -229,38 +229,15 @@ void loop()
 {
   getGpsData();
   InitDHT();
-<<<<<<< HEAD
   
   
   Serial.print("****** "); Serial.print("COUNT="); Serial.println(count); Serial.println("****** ");
   count++;
-  char data[50] = {0} ;
+  char data[30] = {0} ;
   //uint8_t data[50];
-  int dataLength = 50; // Payload Length
-=======
-  char gps_lon[20]={"\0"};  
-  char gps_lat[20]={"\0"}; 
-  String datastring="";
-  String datastring1="";
-  /*if (hand)
-  {
-    handshake();
-    hand = false;  
-  }*/
-  
-  Serial.print("****** "); Serial.print("COUNT="); Serial.println(count); Serial.println("****** ");
-  count++;
-  //char data[50] = {0} ;
-  uint32_t data[100];
-  int dataLength = 100; // Payload Length
->>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
+  int dataLength = 30; // Payload Length
   float h = dht.readHumidity(); // Read temperature Humidity
   float t = dht.readTemperature(); // Read temperature as Celsius (the default)
- /* Serial.print("temperature: "); 
-  Serial.println(t);
-  Serial.print("umidity: "); 
-  Serial.println(h);*/
-  
   int rssi = rf95.lastRssi();
   int snr = rf95.lastSNR();
   int snrSign=0;
@@ -268,17 +245,19 @@ void loop()
   Serial.print("SNR: "); 
   Serial.println(rf95.lastSNR());
   if (rssi < 0) {
-      Serial.print("RSSI negativo: ");  // print RSSI
       rssi = rssi * -1;
       rssiSign = 1; //imposto a uno data[7] quando rssi è negativo altrimenti il default è 0
   }
    if (snr < 0) {
-      Serial.print("SNR negativo: ");  // print RSSI
       snr = snr * -1;
       snrSign = 1; //imposto a uno data[7] quando rssi è negativo altrimenti il default è 0
   }
   Serial.print("RSSI: ");  
   Serial.println(rf95.lastRssi()); // print RSSI
+  Serial.print("Umidity: ");
+  Serial.println(h);
+  Serial.print("Temp: ");
+  Serial.println(t);
   int tempIntPart = t;
   int tempDecPart = (t - tempIntPart) * 100;
   int umIntPart = h;
@@ -286,19 +265,8 @@ void loop()
   int flatIntPart = flat;
   long flatDecPart = (flat - flatIntPart) * 1000000;
   int flonIntPart = flon;
-<<<<<<< HEAD
   long flonDecPart = ((flon - flonIntPart) * 1000000) +1 ;
-/*
-  Serial.print("** flatIntPart: ");  Serial.println(flatIntPart);
-  Serial.print("** flatDecPart: ");  Serial.println(flatDecPart);
-  Serial.print("** flonIntPart: ");  Serial.println(flonIntPart);
-  Serial.print("** flonDecPart: ");  Serial.println(flonDecPart);*/
 
- 
- 
- 
-  
-  
   data[0] = nodeID;
   data[1] = snr;
   data[2] = snrSign;
@@ -316,48 +284,12 @@ void loop()
     flatDecPart /= 10;
   }
   data[17] = flonIntPart;
+  
   for (int i=0; i<6; i++){ 
     data[18 + i] = flonDecPart % 10;
     flonDecPart /= 10;
   }
-
- 
-
       
-=======
-  long flonDecPart = (flon - flonIntPart) * 1000000;
-
-  Serial.print("** flatIntPart: ");  Serial.println(flat);
-  Serial.print("** flatDecPart: ");  Serial.println(flatDecPart);
-  Serial.print("** flonIntPart: ");  Serial.println(flon);
-  Serial.print("** flonDecPart: ");  Serial.println(flonDecPart);
-  //datastring +=dtostrf(flat, 0, 6, gps_lat); 
-  //datastring1 +=dtostrf(flon, 0, 6, gps_lon);
-/*  char cp[10];
-  datastring.toCharArray(cp, 10);*/
-  data[0] = nodeID;
-  data[1] = snr;
-  data[2] = rssi;
-  data[3] = umIntPart;
-  data[4] = unDecPart;
-  data[5] = tempIntPart;
-  data[6] = tempDecPart;
-  data[8] = flatIntPart; 
-  data[9] = flatDecPart;
-  data[10] = flonIntPart; 
-  data[11] = flonDecPart;
-
-  Serial.print("data[8] gps_lat int part: ");
-  Serial.println(data[8]);
-  Serial.print("data[9] gps_lat dec part: ");
-  Serial.println(data[9]);
-
-   Serial.print("data[10] gps_lon int part: ");
-  Serial.println(data[10]);
-  Serial.print("data[11] gps_lon dec part: ");
-  Serial.println(data[11]);
-    
->>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
   uint16_t crcData = CRC16((unsigned char*)data,dataLength);//get CRC DATA
 
   Serial.print("Data to be sent(without CRC): ");
@@ -369,38 +301,21 @@ void loop()
       Serial.print(" ");
   }
   Serial.println();      
-<<<<<<< HEAD
   unsigned char sendBuf[50]={0};
-  //uint8_t sendBuf[100]={0};
+ 
   for(i = 0;i < dataLength;i++)
   {
         sendBuf[i] = data[i] ;
-       /* Serial.print("sendBuf ");
-        Serial.print(i);
-        Serial.print(" ");
-        Serial.println(sendBuf[i]);*/
   }  
   sendBuf[dataLength] = (unsigned char)crcData; // Add CRC to LoRa Data
   sendBuf[dataLength+1] = (unsigned char)(crcData>>8); // Add CRC to LoRa Data
-=======
- // unsigned char sendBuf[50]={0};
-  uint32_t sendBuf;
- /* for(i = 0;i < dataLength;i++)
-  {
-        sendBuf[i] = data[i] ;
-  }  */
- // sendBuf[dataLength] = (unsigned char)crcData; // Add CRC to LoRa Data
- // sendBuf[dataLength+1] = (unsigned char)(crcData>>8); // Add CRC to LoRa Data
-  //sendBuf[dataLength] = crcData;
->>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
   Serial.print("Data to be sent(with CRC):    ");
- /* for(i = 0;i < (dataLength +2); i++)
+  for(i = 0;i < (dataLength +2); i++)
   {
       Serial.print(sendBuf[i],HEX);
       Serial.print(" ");
-  }*/
+  }
   Serial.println();
-<<<<<<< HEAD
   rf95.send(sendBuf, dataLength+2);//Send LoRa Data
 
   ///// Replay from gateway
@@ -408,38 +323,34 @@ void loop()
   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//Reply data array
   uint8_t len = sizeof(buf);//reply data length
 
-  if (rf95.waitAvailableTimeout(30000))// Check If there is reply in 30 seconds.
+  if (rf95.waitAvailableTimeout(10000))// Check If there is reply in 30 seconds.
   {
         // Should be a reply message for us now   
-        if (rf95.recv(buf, &len))//check if reply message is correct
+       if (rf95.recv(buf, &len))//check if reply message is correct
        {
-           if(buf[0] == nodeID ) // Check if reply message has the our node ID
-           {
+          // if(buf[0] == nodeID ) // Check if reply message has the our node ID
+          // {
                pinMode(4, OUTPUT);
                digitalWrite(4, HIGH);
                Serial.print("Got Reply from Gateway: ");//print reply
                Serial.println((char*)buf);             
                delay(400);
                digitalWrite(4, LOW); 
-           }    
+          // }    
         }
         else
         {
            Serial.println("recv failed");//
-           rf95.send(sendBuf, strlen((char*)sendBuf));//resend if no reply
+           //rf95.send(sendBuf, strlen((char*)sendBuf));//resend if no reply
         }
   }
   else
   {
         Serial.println("No reply, is LoRa gateway running?");//No signal reply
-        rf95.send(sendBuf, strlen((char*)sendBuf));//resend data
+       // rf95.send(sendBuf, strlen((char*)sendBuf));//resend data
   }
     //delay(3000); // Send sensor data every 30 seconds
   Serial.println("");
-=======
-  rf95.send(data, dataLength+2);//Send LoRa Data
->>>>>>> 3c3f4bd639f89374e829cf1aacfd8a0891f26b5a
-  
-  
+    
 }
 
