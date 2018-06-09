@@ -13,17 +13,23 @@ import os.path
 application = Flask(__name__)
 #auth = HTTPBasicAuth()
 
+
 @application.route('/logstashmetricinput', methods=['POST'])
 def insert_metric():
-    filename = "inputmetrics.csv"
+    filename = "/home/iotadmin/git/iotelasticproject/inputmetric.cvs"
+    idnode = request.json['idnode']
+    sequencenum = request.json['sequencenum']
+    snr = request.json['snr']
+    rssi = request.json['rssi']
+    temperature = request.json['temperature']
+    umidity = request.json['umidity']
+    latitude = request.json['latitude']
+    longitude = request.json['longitude']
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     with open(filename, "aw") as fo:
-         idnode = request.json['idnode']
-         temperature = request.json['temperature']
-         umidity = request.json['umidity']
-         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
          fo.write(timestamp+","+idnode+","+temperature+","+umidity+"\n")
-        # linewriter.writerow([idnode,temperature,umidity])
     return jsonify({'insert': "ok"}), 201
+
 
 @application.route('/iot/', methods=['GET'])
 def foo():
@@ -32,10 +38,35 @@ def foo():
         idnode = request.args.get('idnode')
         snr = request.args.get('snr')
         rssi = request.args.get('rssi')
+        sequence = request.args.get('sequencenum')
         temperature = request.args.get('temp')
         umidity = request.args.get('umidity')
+        lat = request.args.get('lat')
+        lon = request.args.get('lon')
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        fo.write(timestamp + "," + idnode + "," + snr + "," + rssi + ","  + temperature + "," + umidity + "\n")
+        fo.write(timestamp + "," + sequence + "," +  idnode + "," + snr + "," + rssi  +"," + temperature + "," + umidity + "," + lat + "," + lon +  "\n")
+
+    return 'success', 200
+
+@application.route('/test/', methods=['GET'])
+def test():
+    filename = "inputmetrics_2.csv"
+    with open(filename, "aw") as fo:
+        idnode = request.args.get('idnode')
+        sequence = request.args.get('seq')
+        snr = request.args.get('snr')
+        rssi = request.args.get('rssi')
+	temperature = request.args.get('temp')
+        umidity = request.args.get('umidity')
+	lat = request.args.get('lat')
+        lon = request.args.get('lon')
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        fo.write(timestamp + "," + sequence + "," +  idnode + "," + snr + "," + rssi  +"," + temperature + "," + umidity + "," + lat + "," + lon +  "\n")
+        #fo.write(timestamp + "," + sequence + "," +  idnode + "," + snr + "," + rssi  +"," + temperature + "," + umidity + "," + "\n")
+        #fo.write(timestamp + "," + sequence + "," +  idnode + "," + snr + ","  +"," + temperature + "," + umidity + "," + "\n")
+        #fo.write(timestamp + "," + sequence + "," +  idnode + "," + snr + " " + rssi + "," + temperature + "\n")
+        #fo.write(timestamp + "," + sequence + "," +  idnode + "," + snr + " " + rssi + "," + "\n")
+
     return 'success', 200
 
 
