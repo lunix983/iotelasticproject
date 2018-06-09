@@ -129,7 +129,16 @@ void loop()
                     
                     rf95.send(data, sizeof(data));// Send Reply to LoRa Node
                     rf95.waitPacketSent();
-        
+                    //sendLoraData(buf);   
+                    
+                    String loraData = "";
+                    for (int i = 0; i < len; i++)
+                    {
+                        loraData += String(buf[i]);          
+                    }
+                    Console.print("LORA BUF: ");
+                    Console.println(loraData);
+                    
                     loradata.idNode = String(buf[0]);            
                     
                     int snr; 
@@ -248,8 +257,7 @@ void uploadData() {
   p.close();
 
 
-  Console.print("Feedback from Linux: ");
-  // If there's output from Linux,
+  Console.print("Feedback from Linux: ");  // If there's output from Linux,
   // send it out the Console:
   while (p.available()>0) 
   {
@@ -262,4 +270,13 @@ void uploadData() {
   Console.println("####################################");
   Console.println("");
 }
+
+void sendLoraData(uint8_t loraSensorData) {
+  Console.println("");
+  Console.print("Lora Data SIZE: ");
+  Console.println(sizeof(loraSensorData));
+  
+} 
+
+
 

@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 #String upload_url = "83.212.126.194:50000/iot/?idnode=52&sequencenum=164&snr=8&rssi=-104&temp=25.0&umidity=29.0&lat=44.509231&lon=11.351216";
 
 UPLOADURL="83.212.126.194:50000/iot/?"
-#echo $UPLOADURL
 INDEX="1"
-IDNODE="idnode="
+
+
 for i in `cat /tmp/iotdata.txt`
 do
 
@@ -34,6 +34,8 @@ do
 	    UPLOADURL=$UPLOADURL"&lon="$i
 	    ;;
    esac 
+   let "INDEX++"
 done
 echo "URL: " $UPLOADURL
 curl -i -k $UPLOADURL
+rm -f /tmp/iotdata.txt
