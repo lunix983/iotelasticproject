@@ -10,10 +10,10 @@
 
 RH_RF95 rf95;
 
-//#define DHTPIN 7
-//#define DHTTYPE DHT11
+#define DHTPIN 7
+#define DHTTYPE DHT11
 //#define dht_dpin A0 // Use A0 pin as Data pin for DHT11. 
-//int dht_dpin = 7;
+int dht_dpin = 7;
 byte bGlobalErr;
 char dht_dat[5]; // Store Sensor Data DA VERIFICARE
 int nodeID = 52;
@@ -33,7 +33,7 @@ byte month, day, hour, minute, second, hundredths, rhour, rminute, rsecond, rhun
 */
 
 unsigned long timesend, timereplay, tdelay;
-//DHT dht(DHTPIN, DHTTYPE);
+DHT dht(DHTPIN, DHTTYPE);
 TinyGPS gps;
 
  /*The circuit:ss(rx, tx)ss(3, 4)
@@ -93,13 +93,13 @@ void getGpsData()
   //smartdelay(1000);
   smartdelay(500);
 }
-/*
+
 void InitDHT()
 {
     pinMode(dht_dpin,OUTPUT);//Set A0 to output
     digitalWrite(dht_dpin,HIGH);//Pull high A0    
 }
-*/
+
 
 /*
 void getDataTime()
@@ -115,7 +115,7 @@ void getDataTime()
 
 
 //Get Sensor Data
-/*
+
 void ReadDHT()
 {
     bGlobalErr=0;
@@ -152,8 +152,8 @@ void ReadDHT()
     if(dht_dat[4]!= dht_check_sum)//check sum mismatch
         {bGlobalErr=3;}
 };
-*/
-/*
+
+
 byte read_dht_dat(){
     byte i = 0;
     byte result=0;
@@ -166,7 +166,7 @@ byte read_dht_dat(){
         while (digitalRead(dht_dpin)==HIGH);//Get High, Wait for next data sampleing. 
     }
     return result;
-}*/
+}
 
 
 uint16_t calcByte(uint16_t crc, uint8_t b)
@@ -252,7 +252,7 @@ void setRssiSnr()
 void loop()
 {
   getGpsData();
-//  InitDHT();
+  InitDHT();
   
   Serial.print("MILLIS: "); Serial.println(millis());
 
@@ -266,8 +266,8 @@ void loop()
   char data[30] = {0} ;
   //uint8_t data[50];
   int dataLength = 30; // Payload Length
-  //float h = dht.readHumidity(); // Read temperature Humidity
-  //float t = dht.readTemperature(); // Read temperature as Celsius (the default)
+  float h = dht.readHumidity(); // Read temperature Humidity
+  float t = dht.readTemperature(); // Read temperature as Celsius (the default)
   int rssi = rf95.lastRssi();
   int snr = rf95.lastSNR();
   int snrSign=0;
@@ -285,7 +285,7 @@ void loop()
   Serial.print("RSSI: ");  
   Serial.println(rf95.lastRssi()); // print RSSI
 
-  /*
+  
   Serial.print("Umidity: ");
   Serial.println(h);
   Serial.print("Temp: ");
@@ -294,7 +294,7 @@ void loop()
   int tempDecPart = (t - tempIntPart) * 100;
   int umIntPart = h;
   int unDecPart = (h - umIntPart) * 100;
-  */
+  
   int flatIntPart = flat;
   long flatDecPart = (flat - flatIntPart) * 1000000;
   int flonIntPart = flon;
@@ -306,10 +306,10 @@ void loop()
   data[3] = rssi;
   data[4] = rssiSign;
   data[5] = count;
-  //data[6] = umIntPart;
-  //data[7] = unDecPart;
-  //data[8] = tempIntPart;
-  //data[9] = tempDecPart;
+  data[6] = umIntPart;
+  data[7] = unDecPart;
+  data[8] = tempIntPart;
+  data[9] = tempDecPart;
   data[10] = flatIntPart ; 
   
   for (int i=0; i<6; i++){ 
@@ -325,17 +325,17 @@ void loop()
       
   uint16_t crcData = CRC16((unsigned char*)data,dataLength);//get CRC DATA
   int i;
-  /*
+  
   Serial.print("Data to be sent(without CRC): ");
     
-  int i;
+
   for(i = 0;i < dataLength; i++)
   {      
       Serial.print(data[i],HEX);
       Serial.print(" ");
   }
   Serial.println();   
-     */
+     
   unsigned char sendBuf[50]={0};
  
   for(i = 0;i < dataLength;i++)
@@ -344,14 +344,14 @@ void loop()
   }  
   sendBuf[dataLength] = (unsigned char)crcData; // Add CRC to LoRa Data
   sendBuf[dataLength+1] = (unsigned char)(crcData>>8); // Add CRC to LoRa Data
-  /*
+  
   Serial.print("Data to be sent(with CRC):    ");
   for(i = 0;i < (dataLength +2); i++)
   {
       Serial.print(sendBuf[i],HEX);
       Serial.print(" ");
   }
-  */
+  
   Serial.println("Send LORA DATA .... ");
   rf95.send(sendBuf, dataLength+2);//Send LoRa Data
 
@@ -368,13 +368,13 @@ void loop()
        {
           // if(buf[0] == nodeID ) // Check if reply message has the our node ID
           // {
-              /*
+              
                pinMode(4, OUTPUT);
                digitalWrite(4, HIGH);
                Serial.print("Got Reply from Gateway: ");//print reply
                Serial.println((char*)buf);             
                delay(400);
-               digitalWrite(4, LOW); */
+               digitalWrite(4, LOW); 
                Serial.print("Got Reply from Gateway: ");//print reply
                Serial.println((char*)buf); 
                
