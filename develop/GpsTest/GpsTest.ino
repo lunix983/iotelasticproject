@@ -10,10 +10,10 @@
 
 RH_RF95 rf95;
 
-#define DHTPIN 7
-#define DHTTYPE DHT11
+//#define DHTPIN 7
+//#define DHTTYPE DHT11
 //#define dht_dpin A0 // Use A0 pin as Data pin for DHT11. 
-int dht_dpin = 7;
+//int dht_dpin = 7;
 byte bGlobalErr;
 char dht_dat[5]; // Store Sensor Data DA VERIFICARE
 int nodeID = 52;
@@ -27,7 +27,13 @@ unsigned int count = 1;
 float flat, flon;
 unsigned long age;
 
-DHT dht(DHTPIN, DHTTYPE);
+/*
+int year;
+byte month, day, hour, minute, second, hundredths, rhour, rminute, rsecond, rhundredths;
+*/
+
+unsigned long timesend, timereplay, tdelay;
+//DHT dht(DHTPIN, DHTTYPE);
 TinyGPS gps;
 
  /*The circuit:ss(rx, tx)ss(3, 4)
@@ -36,7 +42,7 @@ TinyGPS gps;
 */
 SoftwareSerial ss(3, 4); // Arduino RX, TX ,
 
-static void smartdelay(unsigned long ms);
+//static void smartdelay(unsigned long ms);
 static void print_float(float val, float invalid, int len, int prec);
 
 
@@ -84,17 +90,32 @@ void getGpsData()
   Serial.print("FLON: ");
   Serial.println(flon, 6);
   Serial.println();
-  smartdelay(1000);
+  //smartdelay(1000);
+  smartdelay(500);
 }
-
+/*
 void InitDHT()
 {
     pinMode(dht_dpin,OUTPUT);//Set A0 to output
-    digitalWrite(dht_dpin,HIGH);//Pull high A0
-    
+    digitalWrite(dht_dpin,HIGH);//Pull high A0    
 }
+*/
+
+/*
+void getDataTime()
+{
+  gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredths, &age);
+  Serial.print("------ "); Serial.print("DATE TIME: ");  
+  char sz[32];
+  sprintf(sz, "%02d/%02d/%02d %02d:%02d:%02d:%02d ",
+        month, day, year, hour, minute, second, hundredths);
+    Serial.print(sz);
+   Serial.println("----- ");
+}*/
+
 
 //Get Sensor Data
+/*
 void ReadDHT()
 {
     bGlobalErr=0;
@@ -131,7 +152,8 @@ void ReadDHT()
     if(dht_dat[4]!= dht_check_sum)//check sum mismatch
         {bGlobalErr=3;}
 };
-
+*/
+/*
 byte read_dht_dat(){
     byte i = 0;
     byte result=0;
@@ -144,7 +166,7 @@ byte read_dht_dat(){
         while (digitalRead(dht_dpin)==HIGH);//Get High, Wait for next data sampleing. 
     }
     return result;
-}
+}*/
 
 
 uint16_t calcByte(uint16_t crc, uint8_t b)
@@ -178,7 +200,7 @@ uint16_t CRC16(uint8_t *pBuffer,uint32_t length)
 }
 
 
-
+/*
 static void print_float(float val, float invalid, int len, int prec)
 {
   if (val == invalid)
@@ -198,6 +220,7 @@ static void print_float(float val, float invalid, int len, int prec)
   }
   smartdelay(0);
 }
+*/
 
 static void smartdelay(unsigned long ms)
 {
@@ -211,7 +234,7 @@ static void smartdelay(unsigned long ms)
     }
   } while (millis() - start < ms);
 }
-
+/*
 void setRssiSnr()
 {
   int rssi = rf95.lastRssi();
@@ -223,23 +246,28 @@ void setRssiSnr()
     Serial.println("SNR o RSSI zero");
   }
 }
-
-
+*/
 
 
 void loop()
 {
   getGpsData();
-  InitDHT();
+//  InitDHT();
   
-  
+  Serial.print("MILLIS: "); Serial.println(millis());
+
+  timesend = millis();
+   
   Serial.print("****** "); Serial.print("COUNT="); Serial.println(count); Serial.println("****** ");
+  
+  
+    
   count++;
   char data[30] = {0} ;
   //uint8_t data[50];
   int dataLength = 30; // Payload Length
-  float h = dht.readHumidity(); // Read temperature Humidity
-  float t = dht.readTemperature(); // Read temperature as Celsius (the default)
+  //float h = dht.readHumidity(); // Read temperature Humidity
+  //float t = dht.readTemperature(); // Read temperature as Celsius (the default)
   int rssi = rf95.lastRssi();
   int snr = rf95.lastSNR();
   int snrSign=0;
@@ -256,6 +284,8 @@ void loop()
   }
   Serial.print("RSSI: ");  
   Serial.println(rf95.lastRssi()); // print RSSI
+
+  /*
   Serial.print("Umidity: ");
   Serial.println(h);
   Serial.print("Temp: ");
@@ -264,21 +294,22 @@ void loop()
   int tempDecPart = (t - tempIntPart) * 100;
   int umIntPart = h;
   int unDecPart = (h - umIntPart) * 100;
+  */
   int flatIntPart = flat;
   long flatDecPart = (flat - flatIntPart) * 1000000;
   int flonIntPart = flon;
   long flonDecPart = ((flon - flonIntPart) * 1000000) +1 ;
-
+  
   data[0] = nodeID;
   data[1] = snr;
   data[2] = snrSign;
   data[3] = rssi;
   data[4] = rssiSign;
   data[5] = count;
-  data[6] = umIntPart;
-  data[7] = unDecPart;
-  data[8] = tempIntPart;
-  data[9] = tempDecPart;
+  //data[6] = umIntPart;
+  //data[7] = unDecPart;
+  //data[8] = tempIntPart;
+  //data[9] = tempDecPart;
   data[10] = flatIntPart ; 
   
   for (int i=0; i<6; i++){ 
@@ -293,7 +324,8 @@ void loop()
   }
       
   uint16_t crcData = CRC16((unsigned char*)data,dataLength);//get CRC DATA
-
+  int i;
+  /*
   Serial.print("Data to be sent(without CRC): ");
     
   int i;
@@ -302,7 +334,8 @@ void loop()
       Serial.print(data[i],HEX);
       Serial.print(" ");
   }
-  Serial.println();      
+  Serial.println();   
+     */
   unsigned char sendBuf[50]={0};
  
   for(i = 0;i < dataLength;i++)
@@ -311,13 +344,15 @@ void loop()
   }  
   sendBuf[dataLength] = (unsigned char)crcData; // Add CRC to LoRa Data
   sendBuf[dataLength+1] = (unsigned char)(crcData>>8); // Add CRC to LoRa Data
+  /*
   Serial.print("Data to be sent(with CRC):    ");
   for(i = 0;i < (dataLength +2); i++)
   {
       Serial.print(sendBuf[i],HEX);
       Serial.print(" ");
   }
-  Serial.println();
+  */
+  Serial.println("Send LORA DATA .... ");
   rf95.send(sendBuf, dataLength+2);//Send LoRa Data
 
   ///// Replay from gateway
@@ -325,34 +360,43 @@ void loop()
   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];//Reply data array
   uint8_t len = sizeof(buf);//reply data length
 
-  if (rf95.waitAvailableTimeout(10000))// Check If there is reply in 30 seconds.
+  //if (rf95.waitAvailableTimeout(10000))// Check If there is reply in 30 seconds.
+  if (rf95.waitAvailableTimeout(10000))
   {
         // Should be a reply message for us now   
        if (rf95.recv(buf, &len))//check if reply message is correct
        {
           // if(buf[0] == nodeID ) // Check if reply message has the our node ID
           // {
+              /*
                pinMode(4, OUTPUT);
                digitalWrite(4, HIGH);
                Serial.print("Got Reply from Gateway: ");//print reply
                Serial.println((char*)buf);             
                delay(400);
-               digitalWrite(4, LOW); 
+               digitalWrite(4, LOW); */
+               Serial.print("Got Reply from Gateway: ");//print reply
+               Serial.println((char*)buf); 
+               
+               timereplay = millis();
+               tdelay = timereplay - timesend; 
+               Serial.print("DELAY: "); Serial.println(tdelay);           
           // }    
         }
         else
         {
            Serial.println("recv failed");//
-           //rf95.send(sendBuf, strlen((char*)sendBuf));//resend if no reply
+   
         }
   }
   else
   {
         Serial.println("No reply, is LoRa gateway running?");//No signal reply
-       // rf95.send(sendBuf, strlen((char*)sendBuf));//resend data
+      
+       timereplay = millis();
+       tdelay = timereplay - timesend; 
+       Serial.print("DELAY: "); Serial.println(tdelay);      
   }
-    //delay(3000); // Send sensor data every 30 seconds
-  Serial.println("");
-    
+ 
 }
 
