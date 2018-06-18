@@ -179,7 +179,7 @@ void loop()
               Console.println("recv failed");
          }
      }
-
+/*
 Console.print("UM: " );
 Console.println(loradata.um);
 Console.print("UM: " );
@@ -190,7 +190,7 @@ Console.print("LAT: " );
 Console.println(loradata.lat);
 Console.print("LON: " );
 Console.println(loradata.lon);
-
+*/
 
 //dataString=loradata.idNode;
 
@@ -250,10 +250,10 @@ void uploadData() {
     p.close();
   }
   
-  p.runShellCommand("/usr/bin/uploaddatasw.sh");
+  p.runShellCommand("/usr/bin/uploaddatajason.sh");
   p.close();
   //p.run();    // Run the process and wait for its termination
-  p.runShellCommand("rm -f /tmp/iotdata.txt");
+  p.runShellCommand("rm -f /tmp/iotdata.txt"); 
   p.close();
 
 
