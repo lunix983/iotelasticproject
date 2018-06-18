@@ -18,6 +18,7 @@ unsigned long timesend, timereplay, tdelay;
 SoftwareSerial ss(3, 4); 
 float gpsdefcoord = 1000.00;
 
+
 struct message{
   int idnode;
   int sequencenum;
@@ -27,7 +28,7 @@ struct message{
   float lat;
   float lon;
   float delay;
-  
+  String message; 
 }data;
 
 byte tx_buf[sizeof(data)] = {0};
@@ -113,7 +114,8 @@ void loop()
       if (rf95.recv(rx_buf, &len))
       {
         memcpy(&data, rx_buf, sizeof(data)); 
-        data.delay = (float)(millis() - data.time) /2 ; 
+        data.delay = (float)(millis() - data.time) /2 ;
+        Serial.print("Message from gateway: ");   Serial.println(data.message);
       }
       else
       {
