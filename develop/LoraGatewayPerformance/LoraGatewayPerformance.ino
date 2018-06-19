@@ -27,7 +27,7 @@ RH_RF95 rf95;
 float frequency = 868.0;
 String dataString = "iotdata=";
 int sf = 12;
-int bw = 250000;
+//int bw = 250000;
 int cr = 8;
 
 
@@ -42,7 +42,7 @@ struct message{
   float lat;
   float lon;
   float delay;
-  String message; 
+  int status;
 }data;
 
 
@@ -73,9 +73,11 @@ void setup()
 
 void loop()
 {   
-    if (rf95.available())// Listen Data from LoRa Node
+    Console.println("Wait for available LoRa Packet: ");
+    if (rf95.waitAvailableTimeout(2000))
+   // if (rf95.available())// Listen Data from LoRa Node
     {
-        Console.println("Wait for available LoRa Packet: ");
+        
         uint8_t rx_buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
         uint8_t len = sizeof(rx_buf);//data buffer length
         if (rf95.recv(rx_buf, &len))//Check if there is incoming data
@@ -85,8 +87,12 @@ void loop()
             Console.println(data.idnode);
             
             memcpy(&data, rx_buf, sizeof(data));
-            data.message = "ACK";
-            memcpy(tx_buf, &data, sizeof(data) );                           
+            data.status = 1;
+            Console.println("RSSI received: "); Console.println(data.rssi);
+            memcpy(tx_buf, &data, sizeof(data) );
+            rf95.send((uint8_t *)tx_buf, sizeof(data));
+            void uploaddata();
+                                       
          }
          else
          {
@@ -96,7 +102,19 @@ void loop()
               
 }
 
-
+void uploaddata()
+{
+  Console.print("SEQUENCE: ");  Console.println(data.sequencenum );
+  Console.print("MILLIS: ");  Console.println(data.time );
+  Console.print("LAT: ");  Console.println(data.lat, 6);
+  Console.print("LON: ");  Console.println(data.lon, 6);
+  Console.print("RSSI: ");  Console.println(data.rssi);
+  Console.print("SNR: ");  Console.println(data.snr);
+  Console.print("DELAY: ");  Console.println(data.delay );
+  Console.print("TEMP: ");  Console.println(data.temp );
+  Console.print("UMIDITY: ");  Console.println(data.umidity );
+  
+}
 
 
 
