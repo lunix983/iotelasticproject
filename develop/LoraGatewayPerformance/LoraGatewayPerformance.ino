@@ -16,6 +16,8 @@
 #include <RH_RF95.h>
 #include <Console.h>
 #include <Process.h>
+#include <ArduinoJson.h>
+
 RH_RF95 rf95;
 
 //If you use Dragino IoT Mesh Firmware, uncomment below lines.
@@ -29,8 +31,8 @@ String dataString = "iotdata=";
 int sf = 12;
 //int bw = 250000;
 int cr = 8;
-
-
+Process process;
+String uploadurl="http://83.212.126.194:50000/logstashmetricinput";
 
 
 struct message{
@@ -43,9 +45,12 @@ struct message{
   float lon;
   float delay;
   int status;
+  float umidity;
+  float temp;
+  int lorasetup;
 }data;
 
-
+//JsonObject& root;
 
 
 byte tx_buf[sizeof(data)] = {0};
@@ -68,6 +73,7 @@ void setup()
     
     Console.println("LoRa Gateway Perfomance  --");
     Console.println(" Luix Progetto tesi");
+   
 }
 
 
@@ -91,7 +97,8 @@ void loop()
             Console.println("RSSI received: "); Console.println(data.rssi);
             memcpy(tx_buf, &data, sizeof(data) );
             rf95.send((uint8_t *)tx_buf, sizeof(data));
-            void uploaddata();
+            uploaddata();
+            //test();
                                        
          }
          else
@@ -102,20 +109,83 @@ void loop()
               
 }
 
+
+void test()
+{
+  Console.println("TEST");
+}
+
 void uploaddata()
 {
-  Console.print("SEQUENCE: ");  Console.println(data.sequencenum );
-  Console.print("MILLIS: ");  Console.println(data.time );
-  Console.print("LAT: ");  Console.println(data.lat, 6);
-  Console.print("LON: ");  Console.println(data.lon, 6);
-  Console.print("RSSI: ");  Console.println(data.rssi);
-  Console.print("SNR: ");  Console.println(data.snr);
-  Console.print("DELAY: ");  Console.println(data.delay );
-  Console.print("TEMP: ");  Console.println(data.temp );
-  Console.print("UMIDITY: ");  Console.println(data.umidity );
+    Console.println("UPLOADDATA: ");
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& root = jsonBuffer.createObject();
+    root["idnode"] = data.idnode;
+    root["sequencenum"] = data.sequencenum;
+    root["snr"] = data.snr;
+    root["rssi"] = data.rssi;
+    root["temperature"] = data.temp;
+    root["umidity"] = data.umidity;
+    root["latitude"] = data.lat;
+    root["longitude"] = data.lon;
+    root["delay"] = data.delay;
+    
+    
+   // root.printTo(Console);
+   /*
+    String jsonstring="'{";
+    root.printTo(jsonstring);
+    
+   
+    process.begin( "curl" );
+    process.addParameter( "-k" );
+    process.addParameter( "-i" );
+    process.addParameter( "-X" );
+    process.addParameter( "POST" );
+    process.addParameter( "-H" );
+    process.addParameter( "Content-Type:application/json" );
+    process.addParameter( "-d" );
+    jsonstring += "\"idnone\":";
+    jsonstring += data.idnode;
+    jsonstring += ",\"sequencenum\":";
+    jsonstring += data.sequencenum;
+    jsonstring += ",\"snr\":";
+    jsonstring += data.snr;
+    jsonstring += ",\"rssi\":";
+    jsonstring += data.rssi;
+    jsonstring += ",\"temperature\":";
+    jsonstring += data.temp;
+    jsonstring += ",\"umidity\":";
+    jsonstring += data.umidity;
+    jsonstring += ",\"latitude\":";
+    jsonstring += data.lat;
+    jsonstring += ",\"longitude\":";
+    jsonstring += data.lon;
+    jsonstring += ",\"delay\":";
+    jsonstring += data.delay;
+    jsonstring += "'}";*/
+   // Console.println(jsonstring);
+    Console.println();
+
+
+
+
+
+    
+//  process.addParameter(root);
+
+
+
+    
+    /*
+    root[""] = data. ;
+    root[""] = data. ;
+    root[""] = data. ;*/
+//  String command = "curl -i -H \"Content-Type: application/json\" -X POST -d '{\"idnode\":"data.idnode",\"sequencenum\":"data.sequencenum",\"snr\":"data.snr",\"rssi\":"data.rssi",\"temperature\":"data.temperature",\"umidity\":"data.umidity",\"latitude\":"data.latitude",\"longitude\":"data.logitude",\"delay\":"data.delay"}'";
   
 }
 
+//p.runShellCommand("curl -k -X POST https://xxx.firebaseio.com/data.json -d    '{ \"Timestamp\" : "timer",\"Humidity\" : " + String(humidity) + ",\"Temperature\"  : " + String(temperature) + ",\"Lightlevel\" : " + String(lightLevel) + "}'");
 
-
+// PAYLOAD=\'{\"idnode\":\"$IDNODE\",\"sequencenum\":\"$SEQUENCENUM\",\"snr\":\"$SNR\",\"rssi\":\"$RSSI\",\"temperature\":\"$TEMPERATURE\",\"umidity\":$UMIDITY,\"latitude\":\"$LATITUDE\",\"longitude\":\"$LONGITUDE\"}\'
 
