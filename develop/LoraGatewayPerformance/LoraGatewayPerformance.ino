@@ -12,11 +12,13 @@
   Dragino Technology Co., Limited
 */
 
-#include <SPI.h>
+//#include <SPI.h>
 #include <RH_RF95.h>
 #include <Console.h>
 #include <Process.h>
 #include <ArduinoJson.h>
+
+
 
 RH_RF95 rf95;
 
@@ -27,16 +29,23 @@ RH_RF95 rf95;
 
 
 float frequency = 868.0;
-String dataString = "iotdata=";
+//String dataString = "iotdata=";
 int sf = 12;
 //int bw = 250000;
 int cr = 8;
-Process process;
+//Process process;
 String uploadurl="http://83.212.126.194:50000/logstashmetricinput";
+<<<<<<< HEAD
 const char filename = "/tmp/iotjsondata.json";
+=======
+//const char *filename = "/tmp/iotdatajson.json";
+uint8_t datasize;
+Process process;
+>>>>>>> 84e99cf3ef175f68866eca53d3fcc4aeefe58856
 
 struct message{
   int idnode;
+  unsigned long experimentid;
   int sequencenum;
   unsigned long time;
   int snr;
@@ -49,6 +58,9 @@ struct message{
   float temp;
   int lorasetup;
 }data;
+ 
+//byte* dataPtr = (byte*)&data;
+struct message *dataPtr;
 
 //JsonObject& root;
 
@@ -86,20 +98,30 @@ void loop()
         
         uint8_t rx_buf[RH_RF95_MAX_MESSAGE_LEN];//receive data buffer
         uint8_t len = sizeof(rx_buf);//data buffer length
+        
+        
+        
         if (rf95.recv(rx_buf, &len))//Check if there is incoming data
         {
            // recdata( buf, len);
-            Console.print("Received LoRa Packet from nodeID: ");
-            Console.println(data.idnode);
+           
+            Console.print("Received LoRa Packet from nodeID: "); Console.println(data.idnode);
             
+            Console.print("data buffer length ");  Console.println(len);
+            
+            Console.print("data sizeof ");  Console.println(sizeof(data));  
+   
+            datasize = len;
+           
+                     
             memcpy(&data, rx_buf, sizeof(data));
-            data.status = 1;
-            Console.println("RSSI received: "); Console.println(data.rssi);
+            data.status = 1;     
             memcpy(tx_buf, &data, sizeof(data) );
             rf95.send((uint8_t *)tx_buf, sizeof(data));
+            
+            printData();
             uploaddata();
-            //test();
-                                       
+                          
          }
          else
          {
@@ -115,8 +137,9 @@ void test()
   Console.println("TEST");
 }
 
-void uploaddata()
+String createCommand(String parameter)
 {
+<<<<<<< HEAD
     Console.println("UPLOADDATA: ");
     /*
     StaticJsonBuffer<200> jsonBuffer;
@@ -175,18 +198,57 @@ void uploaddata()
     
 //  process.addParameter(root);
 
+=======
+  String echo = "echo \"";
+  String outFile = "\" >> /tmp/iotdata.txt";
+  String command = "";
+  command = echo;
+  command += parameter;
+  command += outFile;
+ // Console.print("COMMAND RETURNED: ");  Console.println(command );
+  return command;
+}
+>>>>>>> 84e99cf3ef175f68866eca53d3fcc4aeefe58856
 
 
-    
-    /*
-    root[""] = data. ;
-    root[""] = data. ;
-    root[""] = data. ;*/
-//  String command = "curl -i -H \"Content-Type: application/json\" -X POST -d '{\"idnode\":"data.idnode",\"sequencenum\":"data.sequencenum",\"snr\":"data.snr",\"rssi\":"data.rssi",\"temperature\":"data.temperature",\"umidity\":"data.umidity",\"latitude\":"data.latitude",\"longitude\":"data.logitude",\"delay\":"data.delay"}'";
+void printData(){
   
+  Console.print("MILLIS: ");  Console.println(data.time );
+  Console.print("SEQUENCE: ");  Console.println(data.sequencenum );
+  Console.print("LAT: ");  Console.println(data.lat,6);
+  Console.print("LON: ");  Console.println(data.lon,6);
+  Console.print("RSSI: ");  Console.println(data.rssi);
+  Console.print("SNR: ");  Console.println(data.snr);  
+  Console.print("DELAY: ");  Console.println(data.delay);
+  Console.print("Experiment ID: ");  Console.println(data.experimentid);
+  Console.print("LORA SETUP: ");  Console.println(data.lorasetup); 
+  Console.print("DATA SIZE ");  Console.println(String(datasize));
+  Console.println();
+ 
 }
 
-//p.runShellCommand("curl -k -X POST https://xxx.firebaseio.com/data.json -d    '{ \"Timestamp\" : "timer",\"Humidity\" : " + String(humidity) + ",\"Temperature\"  : " + String(temperature) + ",\"Lightlevel\" : " + String(lightLevel) + "}'");
 
-// PAYLOAD=\'{\"idnode\":\"$IDNODE\",\"sequencenum\":\"$SEQUENCENUM\",\"snr\":\"$SNR\",\"rssi\":\"$RSSI\",\"temperature\":\"$TEMPERATURE\",\"umidity\":$UMIDITY,\"latitude\":\"$LATITUDE\",\"longitude\":\"$LONGITUDE\"}\'
+void uploaddata()
+{ 
+
+    process.runShellCommand("if [ -f /tmp/iotdata.txt ]; then rm -f /tmp/iotdata.txt; fi");
+    process.runShellCommand(createCommand(String(data.idnode)));
+    process.runShellCommand(createCommand(String(data.sequencenum)));
+    process.runShellCommand(createCommand(String(data.snr)));
+    process.runShellCommand(createCommand(String(data.rssi)));
+    process.runShellCommand(createCommand(String(data.temp)));
+    process.runShellCommand(createCommand(String(data.umidity)));
+    process.runShellCommand(createCommand(String(data.lat,6)));
+    process.runShellCommand(createCommand(String(data.lon,6)));
+    process.runShellCommand(createCommand(String(data.delay)));
+    process.runShellCommand(createCommand(String(data.lorasetup)));
+    process.runShellCommand(createCommand(String(datasize)));
+    process.runShellCommand(createCommand(String(data.experimentid)));
+     
+    
+    int res = process.runShellCommand("uploaddatajson.sh");
+    process.close();   
+    Console.print("EXIT CODE : ");  Console.println(res);
+      
+}
 
