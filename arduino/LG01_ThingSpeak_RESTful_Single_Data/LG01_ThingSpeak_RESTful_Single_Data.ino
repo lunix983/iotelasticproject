@@ -45,8 +45,6 @@ struct LoraPayLoad
       String lat;
       String lon;
     }loradata;
-
-
 String* dataPtr = (String*)&loradata;
 
 void setup()
