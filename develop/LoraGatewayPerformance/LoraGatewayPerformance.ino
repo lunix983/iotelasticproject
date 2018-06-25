@@ -33,7 +33,7 @@ int sf = 12;
 int cr = 8;
 Process process;
 String uploadurl="http://83.212.126.194:50000/logstashmetricinput";
-
+const char filename = "/tmp/iotjsondata.json";
 
 struct message{
   int idnode;
@@ -118,6 +118,7 @@ void test()
 void uploaddata()
 {
     Console.println("UPLOADDATA: ");
+    /*
     StaticJsonBuffer<200> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["idnode"] = data.idnode;
@@ -129,7 +130,7 @@ void uploaddata()
     root["latitude"] = data.lat;
     root["longitude"] = data.lon;
     root["delay"] = data.delay;
-    
+    */
     
    // root.printTo(Console);
    /*
