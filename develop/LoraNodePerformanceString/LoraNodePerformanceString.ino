@@ -5,7 +5,6 @@
 #include <DHT.h>
 
 
-
 RH_RF95 rf95;
 TinyGPS gps;
 
@@ -15,33 +14,33 @@ int count = 0;
 float flat, flon;
 unsigned long age;
 SoftwareSerial ss(3, 4); 
-int loraSetup = 1;
+
 
 #define DHTPIN 7
 #define DHTTYPE DHT11
 //#define dht_dpin A0 // Use A0 pin as Data pin for DHT11. 
 int dht_dpin = 7;
 DHT dht(DHTPIN, DHTTYPE);
-long expid; 
 
 struct message{
-  int idnode;
-  unsigned long experimentid;
-  int sequencenum;
-  unsigned long time;
-  int snr;
-  int rssi;
-  float lat;
-  float lon;
-  float delay;
-  int status;
-  float umidity;
-  float temp;
-  int lorasetup;
-}data, datarcv;
+  String idnode;
+  String sequencenum;
+  String time;
+  String snr;
+  String rssi;
+  String lat;
+  String lon;
+  String delay;
+  String status;
+  String umidity;
+  String temp;
+  String lorasetup;
+}data;
+
+String* dataPtr = (String*)&data;
+
 
 byte tx_buf[sizeof(data)] = {0};
-
 
 void setup()
 {
@@ -65,16 +64,8 @@ void setup()
   // Setup Power,dBm
   rf95.setTxPower(13);
   Serial.print("LoRa End Node ID: "); Serial.println(nodeID);
-  
-  Serial.print("Exp ID: "); Serial.println(expid);
-  data.idnode = nodeID;
-  data.experimentid = customRandom();  
-  data.lorasetup = loraSetup;
-  
-  
+ 
 } // end setup
-
-
 
 // SMART DELAY
 static void smartdelay(unsigned long ms)
@@ -93,41 +84,21 @@ static void smartdelay(unsigned long ms)
 
 
 void printData(){
+  
   Serial.print("SEQUENCE: ");  Serial.println(data.sequencenum );
-  Serial.print("EXPERIMENT-ID: ");  Serial.println(data.experimentid);
   Serial.print("MILLIS: ");  Serial.println(data.time );
-  Serial.print("LAT: ");  Serial.println(data.lat, 6);
-  Serial.print("LON: ");  Serial.println(data.lon, 6);
+  Serial.print("LAT: ");  Serial.println(data.lat);
+  Serial.print("LON: ");  Serial.println(data.lon);
   Serial.print("RSSI: ");  Serial.println(data.rssi);
   Serial.print("SNR: ");  Serial.println(data.snr);
   Serial.print("DELAY: ");  Serial.println(data.delay );
   Serial.print("TEMP: ");  Serial.println(data.temp );
   Serial.print("UMIDITY: ");  Serial.println(data.umidity );
-  Serial.print("LORA SETUP: ");  Serial.println(data.lorasetup);
-  //Serial.print();  Serial.println();
  
-}
-
-unsigned long customRandom(){
-  
- 
-  randomSeed(millis()); 
-  int i;
-  unsigned long uuid  = random(1000);
-  
-  for (int i=0; i<3; i++)
-  {
-    uuid = uuid * random(1000);
-  }
-  
-  return uuid;
 }
 
 void loop()
-{ 
-
-  int j;
-  
+{
   
   gps.f_get_position(&flat, &flon, &age);
   pinMode(dht_dpin,OUTPUT);//Set A0 to output
@@ -135,19 +106,20 @@ void loop()
   
   smartdelay(500);
   
-  data.umidity = dht.readHumidity(); // Read temperature Humidity
-  data.temp = dht.readTemperature(); // Read temperature as Celsius (the default)
-  //data.idnode = nodeID;
+  data.idnode = nodeID;
+  data.umidity = String(dht.readHumidity());
+  data.temp = String(dht.readTemperature());
   data.sequencenum = count;
-  data.lat = flat;
-  data.lon = flon;
-  data.time = millis();
+  data.lat = String(flat,6);
+  data.lon = String(flon,6);
+  data.time = String(millis());
   data.rssi = rf95.lastRssi();
   data.snr = rf95.lastSNR();
+
+  unsigned long timestamp = millis();
+  
   printData();
   memcpy(tx_buf, &data, sizeof(data) );
-
-  Serial.print("DATA SIZE:"); Serial.println(sizeof(data)); 
   rf95.send((uint8_t *)tx_buf, sizeof(data));
 
   rf95.waitPacketSent();
@@ -160,13 +132,16 @@ void loop()
   {
       if (rf95.recv(rx_buf, &len))
       {
-        memcpy(&datarcv, rx_buf, sizeof(datarcv)); 
-        data.delay = (float)(millis() - datarcv.time) /2 ;
-        if (datarcv.status == 1){
-          Serial.print("Message from gateway: ");  Serial.println(datarcv.status);
-          Serial.print("SEQUENCE REPLAY: ");  Serial.println(datarcv.sequencenum );
-          Serial.print("TIME REPLAY: ");  Serial.println(datarcv.time );
-          Serial.print("DELAY REPLAY: ");  Serial.println(datarcv.delay );          
+        memcpy(&data, rx_buf, sizeof(data)); 
+       
+        data.delay = String((millis() - timestamp) /2);
+        
+        if (data.status == 1){
+          Serial.print("Message from gateway: ");  Serial.println(data.status);
+          Serial.print("SEQUENCE REPLAY: ");  Serial.println(data.sequencenum );
+           Serial.print("TIME REPLAY: ");  Serial.println(data.time );
+          Serial.print("DELAY REPLAY: ");  Serial.println(data.delay );
+          
         }
          
         

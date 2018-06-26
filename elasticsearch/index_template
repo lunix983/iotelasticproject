@@ -5,78 +5,98 @@ POST _template/sensor_data_template
       "number_of_replicas": "1",
       "number_of_shards": "5"
   },
-  "mappings": {
-    "doc": {
-      "properties": {
-        "sensorId": {
-          "type": "integer"
-        },
-        "sensorType": {
-          "type": "keyword",
-          "fields": {
-            "analyzed": {
-              "type": "text"
+    "mappings": {
+      "doc": {
+        "properties": {
+          "sensorId": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "text"
+              }
+            }
+          },
+          "sequenceNumber": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "text"
+              }
+            }
+          },
+          "snr": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "integer"
+              }
+            }
+          },
+          "rssi": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "integer"
+              }
+            }
+          },
+          "temperature": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "float"
+              }
+            }
+          },
+          "umidity": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "float"
+              }
+            }
+          },
+          "location": {
+            "type": "geo_point"
+          },
+          "time": {
+            "type": "date",
+            "format": "yyyy-MM-dd HH:mm:ss"
+          },
+          "delay": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "float"
+              }
+            }
+          },
+          "lorasetup": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "text"
+              }
+            }
+          },
+          "packetsize": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "integer"
+              }
+            }
+          },
+          "experimentid": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "type": "text"
+              }
             }
           }
-        },
-        "customer": {
-          "type": "keyword",
-          "fields": {
-            "analyzed": {
-              "type": "text"
-            }
-          }
-        },
-        "department": {
-          "type": "keyword",
-          "fields": {
-            "analyzed": {
-              "type": "text"
-            }
-          }
-        },
-        "buildingName": {
-          "type": "keyword",
-          "fields": {
-            "analyzed": {
-              "type": "text"
-            }
-          }
-        },
-        "room": {
-          "type": "keyword",
-          "fields": {
-            "analyzed": {
-              "type": "text"
-            }
-          }
-        },
-        "floor": {
-          "type": "keyword",
-          "fields": {
-            "analyzed": {
-              "type": "text"
-            }
-          }
-        },
-        "locationOnFloor": {
-          "type": "keyword",
-          "fields": {
-            "analyzed": {
-              "type": "text"
-            }
-          }
-        },
-        "location": {
-          "type": "geo_point"
-        },
-        "time": {
-          "type": "date"
-        },
-        "reading": {
-          "type": "double"
         }
       }
-    }
+    },
+    "aliases": {}
   }
-}
