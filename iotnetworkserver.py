@@ -1,33 +1,41 @@
 from flask import Flask, jsonify
 from flask import request
 from datetime import datetime
-#from flask import abort
-#from flask import make_response
-
-#from flask import url_for
-#from flask_httpauth import HTTPBasicAuth
 import csv
 import os.path
+import json
+import requests
 
 
 application = Flask(__name__)
 #auth = HTTPBasicAuth()
 
-
 @application.route('/logstashmetricinput', methods=['POST'])
 def insert_metric():
+    url = 'http://127.0.0.1:31311/'
+    head = {'Content-type': 'application/json'}
     filename = "/home/iotadmin/git/iotelasticproject/inputmetric.cvs"
-    idnode = request.json['idnode']
-    sequencenum = request.json['sequencenum']
-    snr = request.json['snr']
-    rssi = request.json['rssi']
-    temperature = request.json['temperature']
-    umidity = request.json['umidity']
-    latitude = request.json['latitude']
-    longitude = request.json['longitude']
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    idnode = str(request.json['idnode'])
+    sequencenum = str(request.json['sequencenum'])
+    snr = str(request.json['snr'])
+    rssi = str(request.json['rssi'])
+    temperature = str(request.json['temperature'])
+    umidity = str(request.json['umidity'])
+    latitude = str(request.json['latitude'])
+    longitude = str(request.json['longitude'])
+    nodelocation = str(latitude)+","+str(longitude)
+    delay = str(request.json['delay'])
+    lorasetup = str(request.json['lorasetup'])
+    packetsize = str(request.json['packetsize'])
+    expid = str(request.json['experimentid'])
+    gwlocation = str(request.json['gw-location'])
+    timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    payload = {'sensorId':idnode,'sequenceNumber':sequencenum,'snr':snr,'rssi':rssi,'temperature':temperature,'umidity':umidity,'node-location':nodelocation,'time':timestamp,'delay':delay,'lorasetup':lorasetup,'packetsize':packetsize,'experimentid':expid,'gw-location':gwlocation}
+    print payload
+    res = requests.post(url,data=json.dumps(payload),headers=head)
+    print res
     with open(filename, "aw") as fo:
-         fo.write(timestamp+","+idnode+","+temperature+","+umidity+"\n")
+         fo.write(timestamp+","+idnode+","+sequencenum +","+snr+","+rssi+","+temperature+","+umidity+","+nodelocation+","+delay+","+lorasetup+","+packetsize+","+expid+","+gwlocation+"\n")
     return jsonify({'insert': "ok"}), 201
 
 
